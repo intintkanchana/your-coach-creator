@@ -2,105 +2,107 @@
 @tailwind components;
 @tailwind utilities;
 
-/* AI Life Coach Creator - Warm, encouraging design system */
+/* AI Life Coach Creator - Energetic, uplifting design system ☀️ */
 
 @layer base {
   :root {
-    /* Warm cream background */
-    --background: 40 33% 97%;
-    --foreground: 25 30% 18%;
+    /* Soft off-white background for comfort */
+    --background: 48 50% 98%;
+    --foreground: 220 20% 20%;
 
-    /* Cards with soft warmth */
-    --card: 40 40% 99%;
-    --card-foreground: 25 30% 18%;
+    /* Cards with warm glow */
+    --card: 48 60% 99%;
+    --card-foreground: 220 20% 20%;
 
-    --popover: 40 40% 99%;
-    --popover-foreground: 25 30% 18%;
+    --popover: 48 60% 99%;
+    --popover-foreground: 220 20% 20%;
 
-    /* Soft sage green - calming, growth-oriented */
-    --primary: 142 35% 45%;
-    --primary-foreground: 40 40% 99%;
+    /* Sun Yellow - cheerful, motivating primary */
+    --primary: 45 95% 55%;
+    --primary-foreground: 220 20% 15%;
 
-    /* Warm sand secondary */
-    --secondary: 35 30% 92%;
-    --secondary-foreground: 25 30% 25%;
+    /* Fresh teal secondary - supportive, refreshing */
+    --secondary: 168 45% 92%;
+    --secondary-foreground: 168 50% 25%;
 
     /* Muted warm tones */
-    --muted: 35 20% 94%;
-    --muted-foreground: 25 15% 50%;
+    --muted: 45 30% 94%;
+    --muted-foreground: 220 15% 45%;
 
-    /* Warm coral accent - encouraging, celebratory */
-    --accent: 15 75% 65%;
-    --accent-foreground: 40 40% 99%;
+    /* Warm orange accent - encouraging energy */
+    --accent: 28 90% 60%;
+    --accent-foreground: 220 20% 15%;
 
-    /* Soft rose for gentle alerts */
-    --destructive: 0 60% 55%;
-    --destructive-foreground: 40 40% 99%;
+    /* Soft coral for gentle alerts */
+    --destructive: 0 65% 55%;
+    --destructive-foreground: 48 60% 99%;
 
-    /* Borders and inputs - subtle warmth */
-    --border: 35 25% 88%;
-    --input: 35 25% 88%;
-    --ring: 142 35% 45%;
+    /* Borders and inputs - soft warmth */
+    --border: 45 30% 88%;
+    --input: 45 30% 88%;
+    --ring: 45 95% 55%;
 
     --radius: 1rem;
 
     /* Custom coach colors */
-    --coach-glow: 142 40% 85%;
-    --coach-warm: 35 50% 95%;
-    --coach-celebrate: 45 90% 65%;
+    --coach-glow: 45 90% 85%;
+    --coach-warm: 45 60% 96%;
+    --coach-celebrate: 45 100% 60%;
+    --coach-teal: 168 55% 45%;
 
     /* Sidebar */
-    --sidebar-background: 40 33% 97%;
-    --sidebar-foreground: 25 30% 18%;
-    --sidebar-primary: 142 35% 45%;
-    --sidebar-primary-foreground: 40 40% 99%;
-    --sidebar-accent: 35 30% 92%;
-    --sidebar-accent-foreground: 25 30% 25%;
-    --sidebar-border: 35 25% 88%;
-    --sidebar-ring: 142 35% 45%;
+    --sidebar-background: 48 50% 98%;
+    --sidebar-foreground: 220 20% 20%;
+    --sidebar-primary: 45 95% 55%;
+    --sidebar-primary-foreground: 220 20% 15%;
+    --sidebar-accent: 168 45% 92%;
+    --sidebar-accent-foreground: 168 50% 25%;
+    --sidebar-border: 45 30% 88%;
+    --sidebar-ring: 45 95% 55%;
   }
 
   .dark {
-    --background: 25 25% 10%;
-    --foreground: 40 30% 95%;
+    --background: 220 20% 10%;
+    --foreground: 48 50% 95%;
 
-    --card: 25 25% 12%;
-    --card-foreground: 40 30% 95%;
+    --card: 220 20% 12%;
+    --card-foreground: 48 50% 95%;
 
-    --popover: 25 25% 12%;
-    --popover-foreground: 40 30% 95%;
+    --popover: 220 20% 12%;
+    --popover-foreground: 48 50% 95%;
 
-    --primary: 142 40% 55%;
-    --primary-foreground: 25 25% 10%;
+    --primary: 45 90% 50%;
+    --primary-foreground: 220 20% 10%;
 
-    --secondary: 25 20% 18%;
-    --secondary-foreground: 40 30% 90%;
+    --secondary: 168 30% 18%;
+    --secondary-foreground: 168 40% 85%;
 
-    --muted: 25 20% 18%;
-    --muted-foreground: 35 15% 60%;
+    --muted: 220 15% 18%;
+    --muted-foreground: 45 20% 60%;
 
-    --accent: 15 70% 60%;
-    --accent-foreground: 25 25% 10%;
+    --accent: 28 80% 55%;
+    --accent-foreground: 220 20% 10%;
 
     --destructive: 0 55% 45%;
-    --destructive-foreground: 40 30% 95%;
+    --destructive-foreground: 48 50% 95%;
 
-    --border: 25 20% 20%;
-    --input: 25 20% 20%;
-    --ring: 142 40% 55%;
+    --border: 220 15% 22%;
+    --input: 220 15% 22%;
+    --ring: 45 90% 50%;
 
-    --coach-glow: 142 30% 25%;
-    --coach-warm: 25 20% 15%;
-    --coach-celebrate: 45 80% 50%;
+    --coach-glow: 45 70% 25%;
+    --coach-warm: 220 15% 15%;
+    --coach-celebrate: 45 85% 55%;
+    --coach-teal: 168 45% 40%;
 
-    --sidebar-background: 25 25% 10%;
-    --sidebar-foreground: 40 30% 95%;
-    --sidebar-primary: 142 40% 55%;
-    --sidebar-primary-foreground: 25 25% 10%;
-    --sidebar-accent: 25 20% 18%;
-    --sidebar-accent-foreground: 40 30% 90%;
-    --sidebar-border: 25 20% 20%;
-    --sidebar-ring: 142 40% 55%;
+    --sidebar-background: 220 20% 10%;
+    --sidebar-foreground: 48 50% 95%;
+    --sidebar-primary: 45 90% 50%;
+    --sidebar-primary-foreground: 220 20% 10%;
+    --sidebar-accent: 168 30% 18%;
+    --sidebar-accent-foreground: 168 40% 85%;
+    --sidebar-border: 220 15% 22%;
+    --sidebar-ring: 45 90% 50%;
   }
 }
 
