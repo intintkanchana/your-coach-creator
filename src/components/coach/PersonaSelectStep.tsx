@@ -1,0 +1,116 @@
+import { useState } from "react";
+import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { CoachPersona } from "@/types/coach";
+import { coachPersonas } from "@/data/coachOptions";
+import { Check, ArrowRight } from "lucide-react";
+
+interface PersonaSelectStepProps {
+  onSelect: (persona: CoachPersona) => void;
+}
+
+export function PersonaSelectStep({ onSelect }: PersonaSelectStepProps) {
+  const [selected, setSelected] = useState<string | null>(null);
+
+  const handleContinue = () => {
+    const persona = coachPersonas.find((p) => p.id === selected);
+    if (persona) {
+      onSelect(persona);
+    }
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.5 }}
+      className="flex flex-col items-center px-4 py-8 max-w-2xl mx-auto"
+    >
+      <motion.div
+        initial={{ scale: 0 }}
+        animate={{ scale: 1 }}
+        transition={{ delay: 0.1, type: "spring" }}
+        className="mb-6"
+      >
+        <span className="text-5xl">🎭</span>
+      </motion.div>
+
+      <motion.h2
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.2 }}
+        className="text-2xl md:text-3xl font-semibold text-foreground mb-3 text-center"
+      >
+        Now let's shape your coach's personality
+      </motion.h2>
+
+      <motion.p
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.3 }}
+        className="text-muted-foreground text-center mb-8 max-w-md"
+      >
+        How would you like me to support you? This affects how encouragement and feedback feel. 
+        You can always change this later!
+      </motion.p>
+
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.4 }}
+        className="w-full grid md:grid-cols-2 gap-3"
+      >
+        {coachPersonas.map((persona, i) => (
+          <motion.button
+            key={persona.id}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 + i * 0.1 }}
+            onClick={() => setSelected(persona.id)}
+            className={`
+              relative flex items-start gap-4 p-5 rounded-2xl border-2 text-left transition-all duration-300
+              ${
+                selected === persona.id
+                  ? "border-primary bg-primary/5 shadow-glow"
+                  : "border-border bg-card hover:border-primary/30 hover:shadow-soft"
+              }
+            `}
+          >
+            <span className="text-3xl flex-shrink-0">{persona.emoji}</span>
+            <div className="flex-1">
+              <h3 className="font-semibold text-foreground mb-1">{persona.name}</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">{persona.description}</p>
+            </div>
+            {selected === persona.id && (
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                className="absolute top-4 right-4 h-6 w-6 rounded-full bg-primary flex items-center justify-center"
+              >
+                <Check className="h-4 w-4 text-primary-foreground" />
+              </motion.div>
+            )}
+          </motion.button>
+        ))}
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: selected ? 1 : 0.5 }}
+        transition={{ delay: 0.6 }}
+        className="flex justify-center pt-8"
+      >
+        <Button
+          onClick={handleContinue}
+          disabled={!selected}
+          size="lg"
+          className="px-8 py-6 text-lg rounded-2xl"
+        >
+          Continue
+          <ArrowRight className="ml-2 h-5 w-5" />
+        </Button>
+      </motion.div>
+    </motion.div>
+  );
+}
