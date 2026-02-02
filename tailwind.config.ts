@@ -61,6 +61,7 @@ export default {
           glow: "hsl(var(--coach-glow))",
           warm: "hsl(var(--coach-warm))",
           celebrate: "hsl(var(--coach-celebrate))",
+          teal: "hsl(var(--coach-teal))",
         },
       },
       borderRadius: {
