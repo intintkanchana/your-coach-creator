@@ -8,7 +8,6 @@ import { DirectionSelectStep } from "./DirectionSelectStep";
 import { PersonaSelectStep } from "./PersonaSelectStep";
 import { VitalsSelectStep } from "./VitalsSelectStep";
 import { SummaryStep } from "./SummaryStep";
-import { useToast } from "@/hooks/use-toast";
 
 const initialConfig: CoachConfig = {
   goal: "",
@@ -20,7 +19,6 @@ const initialConfig: CoachConfig = {
 export function CoachCreator() {
   const [step, setStep] = useState<Step>("welcome");
   const [config, setConfig] = useState<CoachConfig>(initialConfig);
-  const { toast } = useToast();
 
   const handleStart = useCallback(() => {
     setStep("describe-goal");
@@ -45,14 +43,6 @@ export function CoachCreator() {
     setConfig((prev) => ({ ...prev, vitalSigns }));
     setStep("summary");
   }, []);
-
-  const handleComplete = useCallback(() => {
-    toast({
-      title: "🎉 Your coach is ready!",
-      description: "Let's begin your journey together.",
-    });
-    // Here you would typically navigate to the coach dashboard or save the config
-  }, [toast]);
 
   const handleStartOver = useCallback(() => {
     setConfig(initialConfig);
@@ -97,7 +87,6 @@ export function CoachCreator() {
             <SummaryStep
               key="summary"
               config={config}
-              onComplete={handleComplete}
               onStartOver={handleStartOver}
             />
           )}
