@@ -40,6 +40,7 @@ export const defaultVitalSigns: VitalSign[] = [
     description: "A quick check-in on how you're feeling — helps spot patterns.",
     emoji: "😊",
     selected: true,
+    type: "slider",
   },
   {
     id: "energy",
@@ -47,6 +48,7 @@ export const defaultVitalSigns: VitalSign[] = [
     description: "Track your energy to understand what gives you fuel.",
     emoji: "⚡",
     selected: true,
+    type: "number",
   },
   {
     id: "sleep",
@@ -54,6 +56,7 @@ export const defaultVitalSigns: VitalSign[] = [
     description: "Rest matters! Gentle reminders about sleep patterns.",
     emoji: "😴",
     selected: false,
+    type: "number",
   },
   {
     id: "progress",
@@ -61,6 +64,7 @@ export const defaultVitalSigns: VitalSign[] = [
     description: "Small wins and reflections to celebrate your journey.",
     emoji: "📝",
     selected: true,
+    type: "text",
   },
   {
     id: "stress",
@@ -68,6 +72,7 @@ export const defaultVitalSigns: VitalSign[] = [
     description: "Notice stress levels early so we can adjust together.",
     emoji: "🌡️",
     selected: false,
+    type: "boolean",
   },
   {
     id: "gratitude",
@@ -75,13 +80,14 @@ export const defaultVitalSigns: VitalSign[] = [
     description: "Little things that brought you joy — research shows it helps!",
     emoji: "🙏",
     selected: false,
+    type: "photo",
   },
 ];
 
 export const generateDirections = (goal: string) => {
   // Simulated AI-generated directions based on goal keywords
   const lowerGoal = goal.toLowerCase();
-  
+
   if (lowerGoal.includes("fitness") || lowerGoal.includes("exercise") || lowerGoal.includes("health") || lowerGoal.includes("weight")) {
     return [
       { id: "sustainable-habits", title: "Build Sustainable Habits", description: "Focus on small, lasting changes rather than intense routines", emoji: "🌱" },
@@ -90,7 +96,7 @@ export const generateDirections = (goal: string) => {
       { id: "strength-confidence", title: "Build Strength & Confidence", description: "Progressive goals that make you feel powerful", emoji: "💪" },
     ];
   }
-  
+
   if (lowerGoal.includes("stress") || lowerGoal.includes("anxiety") || lowerGoal.includes("calm") || lowerGoal.includes("peace")) {
     return [
       { id: "daily-calm", title: "Daily Calm Rituals", description: "Simple practices to bring peace into your day", emoji: "🕯️" },
@@ -99,7 +105,7 @@ export const generateDirections = (goal: string) => {
       { id: "stress-triggers", title: "Understand Your Triggers", description: "Identify patterns and build resilience", emoji: "🔍" },
     ];
   }
-  
+
   if (lowerGoal.includes("career") || lowerGoal.includes("job") || lowerGoal.includes("work") || lowerGoal.includes("professional")) {
     return [
       { id: "clarity-direction", title: "Find Clarity & Direction", description: "Explore what truly lights you up professionally", emoji: "🧭" },
@@ -108,7 +114,7 @@ export const generateDirections = (goal: string) => {
       { id: "skill-growth", title: "Skill Development", description: "Identify and grow the skills that matter most", emoji: "📈" },
     ];
   }
-  
+
   // Default directions for general goals
   return [
     { id: "clarity-first", title: "Get Clear on What Matters", description: "Define what success really looks like for you", emoji: "💎" },

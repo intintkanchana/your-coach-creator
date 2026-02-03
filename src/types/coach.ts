@@ -12,12 +12,15 @@ export interface CoachPersona {
   emoji: string;
 }
 
+export type VitalSignType = 'number' | 'slider' | 'text' | 'photo' | 'boolean';
+
 export interface VitalSign {
   id: string;
   name: string;
   description: string;
   emoji: string;
   selected: boolean;
+  type: VitalSignType;
 }
 
 export interface CoachConfig {
@@ -27,7 +30,7 @@ export interface CoachConfig {
   vitalSigns: VitalSign[];
 }
 
-export type Step = 
+export type Step =
   | 'welcome'
   | 'describe-goal'
   | 'select-direction'

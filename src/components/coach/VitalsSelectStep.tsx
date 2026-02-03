@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { VitalSign } from "@/types/coach";
+import { Textarea } from "@/components/ui/textarea";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { VitalSign, VitalSignType } from "@/types/coach";
 import { defaultVitalSigns } from "@/data/coachOptions";
-import { Check, ArrowRight, Eye } from "lucide-react";
+import { Check, ArrowRight, Eye, Loader2, Plus, ChevronDown } from "lucide-react";
 
 interface VitalsSelectStepProps {
   onSelect: (vitals: VitalSign[]) => void;
@@ -11,11 +13,52 @@ interface VitalsSelectStepProps {
 
 export function VitalsSelectStep({ onSelect }: VitalsSelectStepProps) {
   const [vitals, setVitals] = useState<VitalSign[]>(defaultVitalSigns);
+  const [customGoal, setCustomGoal] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [isCustomOpen, setIsCustomOpen] = useState(false);
 
   const toggleVital = (id: string) => {
     setVitals((prev) =>
       prev.map((v) => (v.id === id ? { ...v, selected: !v.selected } : v))
     );
+  };
+
+  const getTypeConfig = (type: VitalSignType) => {
+    switch (type) {
+      case "number":
+        return { icon: "🔢", label: "Number" };
+      case "slider":
+        return { icon: "🎚️", label: "Slider" };
+      case "text":
+        return { icon: "🔡", label: "Text" };
+      case "photo":
+        return { icon: "📷", label: "Photo" };
+      case "boolean":
+        return { icon: "☑️", label: "Boolean" };
+      default:
+        return { icon: "❓", label: "Unknown" };
+    }
+  };
+
+  const handleGenerateCustomVital = () => {
+    setIsGenerating(true);
+    // Mock API simulation
+    setTimeout(() => {
+      const newVital: VitalSign = {
+        id: `custom-${Date.now()}`,
+        name: customGoal ? "Custom Tracker" : "General Tracker",
+        description: customGoal
+          ? `Tracking progress specifically for: ${customGoal}`
+          : "A custom metric tailored to your specific needs.",
+        emoji: "✨",
+        selected: true,
+        type: "text",
+      };
+
+      setVitals(prev => [...prev, newVital]);
+      setCustomGoal("");
+      setIsGenerating(false);
+    }, 1500);
   };
 
   const handleContinue = () => {
@@ -105,11 +148,74 @@ export function VitalsSelectStep({ onSelect }: VitalsSelectStepProps) {
             </div>
             <span className="text-2xl flex-shrink-0 leading-none">{vital.emoji}</span>
             <div className="flex-1 min-w-0">
-              <h3 className="font-medium text-foreground">{vital.name}</h3>
+              <div className="flex justify-between items-start mb-1">
+                <h3 className="font-medium text-foreground">{vital.name}</h3>
+                <span className="text-[10px] uppercase tracking-wider font-medium text-muted-foreground bg-muted/50 px-1.5 py-0.5 rounded-md flex items-center gap-1 ml-2 flex-shrink-0">
+                  <span>{getTypeConfig(vital.type).icon}</span>
+                  <span>{getTypeConfig(vital.type).label}</span>
+                </span>
+              </div>
               <p className="text-sm text-muted-foreground">{vital.description}</p>
             </div>
           </motion.button>
         ))}
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.6 }}
+        className="w-full mt-8"
+      >
+        <Collapsible
+          open={isCustomOpen}
+          onOpenChange={setIsCustomOpen}
+          className="w-full bg-muted/30 rounded-2xl border-2 border-dashed border-border overflow-hidden"
+        >
+          <CollapsibleTrigger className="flex w-full items-center justify-between p-4 md:p-6 hover:bg-muted/50 transition-colors text-left group">
+            <div>
+              <h3 className="font-semibold text-foreground flex items-center gap-2">
+                <Plus className="h-4 w-4" />
+                Add Custom Tracker
+              </h3>
+              <p className="text-sm text-muted-foreground mt-1">
+                Don't see what you need? Add your own.
+              </p>
+            </div>
+            <ChevronDown
+              className={`h-5 w-5 text-muted-foreground transition-transform duration-200 ${isCustomOpen ? "rotate-180" : ""}`}
+            />
+          </CollapsibleTrigger>
+
+          <CollapsibleContent>
+            <div className="px-4 pb-4 md:px-6 md:pb-6 space-y-3 pt-0">
+              <p className="text-sm text-muted-foreground mb-3">
+                Describe what you want to track, and we'll suggest a metric.
+              </p>
+              <Textarea
+                placeholder="E.g., I want to track how many pages I read each day..."
+                value={customGoal}
+                onChange={(e) => setCustomGoal(e.target.value)}
+                className="bg-card resize-none min-h-[80px]"
+              />
+              <Button
+                onClick={handleGenerateCustomVital}
+                disabled={isGenerating}
+                variant="secondary"
+                className="w-full sm:w-auto"
+              >
+                {isGenerating ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Finding best metric...
+                  </>
+                ) : (
+                  "Generate Options"
+                )}
+              </Button>
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
       </motion.div>
 
       <motion.p
