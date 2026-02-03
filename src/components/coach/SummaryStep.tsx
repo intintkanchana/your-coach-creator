@@ -12,6 +12,23 @@ interface SummaryStepProps {
 export function SummaryStep({ config, onComplete, onStartOver }: SummaryStepProps) {
   const selectedVitals = config.vitalSigns.filter((v) => v.selected);
 
+  const getCoachBio = (id: string) => {
+    switch (id) {
+      case "gentle-guide":
+        return "I'm like a warm cup of tea for your soul, but with spreadsheets! I promise to never say 'try harder' when you need a nap. Let's bloom at your own pace—no fertilizers needed!";
+      case "cheerleader":
+        return "I brought pom-poms! Virtual ones, but they're huge! I will celebrate everything, even if you just put on socks today. YOU GOT THIS! Ready to turn your life into a highlight reel?";
+      case "wise-mentor":
+        return "I've seen it all (mostly). I offer wisdom, perspective, and the occasional cryptic metaphor that will make total sense at 3 AM. Let's unlock your potential, one riddle at a time.";
+      case "adventure-buddy":
+        return "Pack your bags—metaphorically! We’re going on a quest for greatness. I have a map, a compass, and zero sense of direction, but we’ll find the treasure anyway. Adventure awaits!";
+      case "calm-anchor":
+        return "I'm the meditative breath you forgot to take. When the world spins, I stay put. Think of me as a human paperweight for your flying thoughts. Let's find your center.";
+      default:
+        return "I'm your personal coach, ready to help you annoy your friends with how much progress you're making!";
+    }
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -63,6 +80,30 @@ export function SummaryStep({ config, onComplete, onStartOver }: SummaryStepProp
       >
         I'm here to support you, cheer you on, and grow with you — step by step.
       </motion.p>
+
+      {/* Feature Coach Card */}
+      {config.persona && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.35 }}
+          className="w-full bg-gradient-to-br from-primary/10 to-card border-2 border-primary/20 rounded-3xl p-6 md:p-8 mb-6 text-center relative overflow-hidden"
+        >
+
+
+          <div className="text-6xl mb-4 animate-bounce-slow">
+            {config.persona.emoji}
+          </div>
+
+          <h3 className="text-2xl font-bold text-foreground mb-3">
+            Coach {config.persona.name}
+          </h3>
+
+          <p className="text-muted-foreground italic max-w-sm mx-auto leading-relaxed">
+            "{getCoachBio(config.persona.id)}"
+          </p>
+        </motion.div>
+      )}
 
       {/* Summary Card */}
       <motion.div
