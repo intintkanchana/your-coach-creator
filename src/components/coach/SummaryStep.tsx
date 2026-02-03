@@ -164,8 +164,15 @@ export function SummaryStep({ config, onComplete, onStartOver }: SummaryStepProp
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.6 }}
-        className="flex flex-col sm:flex-row items-center gap-3 pt-8 w-full"
+        className="flex flex-col-reverse sm:flex-row items-center justify-center gap-3 pt-8 w-full"
       >
+        <Button
+          variant="ghost"
+          onClick={onStartOver}
+          className="text-muted-foreground hover:text-foreground"
+        >
+          Start Over
+        </Button>
         <Button
           onClick={onComplete}
           size="lg"
@@ -173,13 +180,6 @@ export function SummaryStep({ config, onComplete, onStartOver }: SummaryStepProp
         >
           <Sparkles className="mr-2 h-5 w-5" />
           Let's Do This!
-        </Button>
-        <Button
-          variant="ghost"
-          onClick={onStartOver}
-          className="text-muted-foreground hover:text-foreground"
-        >
-          Start Over
         </Button>
       </motion.div>
 
