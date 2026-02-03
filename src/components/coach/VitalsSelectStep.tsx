@@ -56,7 +56,7 @@ export function VitalsSelectStep({ onSelect }: VitalsSelectStepProps) {
         transition={{ delay: 0.3 }}
         className="text-muted-foreground text-center mb-2 max-w-md"
       >
-        To support you better, here are a few things we <em>could</em> track. 
+        To support you better, here are a few things we <em>could</em> track.
         Everything is optional — just pick what feels comfortable.
       </motion.p>
 
@@ -74,7 +74,7 @@ export function VitalsSelectStep({ onSelect }: VitalsSelectStepProps) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.4 }}
-        className="w-full grid gap-3"
+        className="w-full grid grid-cols-1 md:grid-cols-2 gap-3"
       >
         {vitals.map((vital, i) => (
           <motion.button
@@ -84,11 +84,10 @@ export function VitalsSelectStep({ onSelect }: VitalsSelectStepProps) {
             transition={{ delay: 0.4 + i * 0.08 }}
             onClick={() => toggleVital(vital.id)}
             className={`
-              relative flex items-center gap-4 p-4 rounded-2xl border-2 text-left transition-all duration-300
-              ${
-                vital.selected
-                  ? "border-primary bg-primary/5"
-                  : "border-border bg-card hover:border-primary/30"
+              relative flex items-start gap-3 p-3 md:gap-4 md:p-4 rounded-2xl border-2 text-left transition-all duration-300
+              ${vital.selected
+                ? "border-primary bg-primary/5"
+                : "border-border bg-card hover:border-primary/30"
               }
             `}
           >
@@ -104,10 +103,10 @@ export function VitalsSelectStep({ onSelect }: VitalsSelectStepProps) {
                 </motion.div>
               )}
             </div>
-            <span className="text-2xl flex-shrink-0">{vital.emoji}</span>
+            <span className="text-2xl flex-shrink-0 leading-none">{vital.emoji}</span>
             <div className="flex-1 min-w-0">
               <h3 className="font-medium text-foreground">{vital.name}</h3>
-              <p className="text-sm text-muted-foreground truncate">{vital.description}</p>
+              <p className="text-sm text-muted-foreground">{vital.description}</p>
             </div>
           </motion.button>
         ))}
