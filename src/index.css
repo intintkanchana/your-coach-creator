@@ -49,6 +49,14 @@
     --coach-warm: 45 60% 96%;
     --coach-celebrate: 45 100% 60%;
     --coach-teal: 168 55% 45%;
+    
+    /* Chat colors - Sage Green for user, Gold for highlights */
+    --chat-user: 145 35% 45%;
+    --chat-user-foreground: 0 0% 100%;
+    --chat-coach: 0 0% 98%;
+    --chat-coach-foreground: 220 20% 20%;
+    --chat-highlight: 45 90% 60%;
+    --chat-system: 220 15% 65%;
 
     /* Sidebar */
     --sidebar-background: 48 50% 98%;
@@ -94,6 +102,14 @@
     --coach-warm: 220 15% 15%;
     --coach-celebrate: 45 85% 55%;
     --coach-teal: 168 45% 40%;
+    
+    /* Chat colors - dark mode */
+    --chat-user: 145 30% 35%;
+    --chat-user-foreground: 0 0% 100%;
+    --chat-coach: 220 20% 18%;
+    --chat-coach-foreground: 48 50% 95%;
+    --chat-highlight: 45 80% 50%;
+    --chat-system: 220 15% 50%;
 
     --sidebar-background: 220 20% 10%;
     --sidebar-foreground: 48 50% 95%;

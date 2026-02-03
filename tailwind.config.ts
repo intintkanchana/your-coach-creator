@@ -1,5 +1,7 @@
 import type { Config } from "tailwindcss";
 
+// Chat color tokens added for CoachChat interface
+
 export default {
   darkMode: ["class"],
   content: ["./pages/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}", "./app/**/*.{ts,tsx}", "./src/**/*.{ts,tsx}"],
@@ -62,6 +64,14 @@ export default {
           warm: "hsl(var(--coach-warm))",
           celebrate: "hsl(var(--coach-celebrate))",
           teal: "hsl(var(--coach-teal))",
+        },
+        chat: {
+          user: "hsl(var(--chat-user))",
+          "user-foreground": "hsl(var(--chat-user-foreground))",
+          coach: "hsl(var(--chat-coach))",
+          "coach-foreground": "hsl(var(--chat-coach-foreground))",
+          highlight: "hsl(var(--chat-highlight))",
+          system: "hsl(var(--chat-system))",
         },
       },
       borderRadius: {

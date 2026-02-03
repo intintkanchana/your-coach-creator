@@ -1,16 +1,21 @@
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { CoachConfig } from "@/types/coach";
-import { Sparkles, Heart, ArrowRight } from "lucide-react";
+import { Sparkles, Heart } from "lucide-react";
 
 interface SummaryStepProps {
   config: CoachConfig;
-  onComplete: () => void;
   onStartOver: () => void;
 }
 
-export function SummaryStep({ config, onComplete, onStartOver }: SummaryStepProps) {
+export function SummaryStep({ config, onStartOver }: SummaryStepProps) {
+  const navigate = useNavigate();
   const selectedVitals = config.vitalSigns.filter((v) => v.selected);
+
+  const handleComplete = () => {
+    navigate("/chat", { state: { config } });
+  };
 
   const getCoachBio = (id: string) => {
     switch (id) {
@@ -174,7 +179,7 @@ export function SummaryStep({ config, onComplete, onStartOver }: SummaryStepProp
           Start Over
         </Button>
         <Button
-          onClick={onComplete}
+          onClick={handleComplete}
           size="lg"
           className="w-full sm:w-auto px-8 py-6 text-lg rounded-2xl shadow-glow"
         >
