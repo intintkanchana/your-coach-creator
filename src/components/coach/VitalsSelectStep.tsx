@@ -5,13 +5,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { VitalSign, VitalSignType } from "@/types/coach";
 import { defaultVitalSigns } from "@/data/coachOptions";
-import { Check, ArrowRight, Eye, Loader2, Plus, ChevronDown } from "lucide-react";
+import { Check, ArrowRight, Eye, Loader2, Plus, ChevronDown, ChevronLeft } from "lucide-react";
 
 interface VitalsSelectStepProps {
   onSelect: (vitals: VitalSign[]) => void;
+  onBack: () => void;
 }
 
-export function VitalsSelectStep({ onSelect }: VitalsSelectStepProps) {
+export function VitalsSelectStep({ onSelect, onBack }: VitalsSelectStepProps) {
   const [vitals, setVitals] = useState<VitalSign[]>(defaultVitalSigns);
   const [customGoal, setCustomGoal] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
@@ -73,8 +74,16 @@ export function VitalsSelectStep({ onSelect }: VitalsSelectStepProps) {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 0.5 }}
-      className="flex flex-col items-center px-4 py-8 max-w-2xl mx-auto"
+      className="relative flex flex-col items-center px-4 py-8 max-w-2xl mx-auto"
     >
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={onBack}
+        className="absolute left-0 top-0 h-8 w-8 text-muted-foreground hover:text-foreground"
+      >
+        <ChevronLeft className="h-5 w-5" />
+      </Button>
       <motion.div
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}

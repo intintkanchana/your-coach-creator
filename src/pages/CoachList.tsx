@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { LogOut, MoreVertical, Settings, Trash2, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { AppHeader } from "@/components/common/AppHeader";
 import {
   Dialog,
   DialogContent,
@@ -71,23 +72,21 @@ const CoachList = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm border-b border-border px-6 py-4">
-        <div className="max-w-2xl mx-auto flex items-center justify-between">
-          <h1 className="text-xl font-bold text-foreground">My Squad</h1>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setShowSignOutDialog(true)}
-            className="text-muted-foreground hover:text-foreground"
-          >
-            <LogOut className="w-5 h-5" />
-          </Button>
-        </div>
-      </header>
+      <AppHeader>
+        <h1 className="text-xl font-bold text-foreground">My Squad</h1>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setShowSignOutDialog(true)}
+          className="text-muted-foreground hover:text-foreground"
+        >
+          <LogOut className="w-5 h-5" />
+        </Button>
+      </AppHeader>
 
       {/* Coach List */}
-      <main className="px-6 py-6">
-        <div className="max-w-2xl mx-auto space-y-4">
+      <main className="px-4 py-6">
+        <div className="max-w-3xl mx-auto space-y-4">
           {coaches.map((coach, index) => (
             <motion.div
               key={coach.id}

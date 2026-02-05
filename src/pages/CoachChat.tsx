@@ -41,22 +41,23 @@ export default function CoachChat() {
   const location = useLocation();
   const navigate = useNavigate();
   const config: CoachConfig = location.state?.config || defaultConfig;
-  
+
   const [messages, setMessages] = useState<ChatMessageType[]>([]);
   const [quickActions, setQuickActions] = useState<QuickAction[]>([]);
   const [isTyping, setIsTyping] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [chatPhase, setChatPhase] = useState(0);
-  
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = useCallback(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }, []);
 
   useEffect(() => {
-    scrollToBottom();
-  }, [messages, quickActions, scrollToBottom]);
+    // Immediate scroll on mount/updates to prevent jump
+    messagesEndRef.current?.scrollIntoView({ block: "nearest" });
+  }, [messages, quickActions]);
 
   // Mock chat flow
   useEffect(() => {
@@ -249,11 +250,11 @@ export default function CoachChat() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="h-[100dvh] bg-background flex flex-col overflow-hidden">
       <ChatHeader config={config} onSettingsClick={() => setSettingsOpen(true)} />
 
       {/* Chat messages */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4 scroll-smooth">
         <div className="max-w-3xl mx-auto space-y-4">
           <AnimatePresence mode="popLayout">
             {messages.map((message) => (
@@ -268,8 +269,8 @@ export default function CoachChat() {
 
           {/* Typing indicator */}
           {isTyping && (
-            <div className="flex gap-3 max-w-[85%]">
-              <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary/20 to-chat-highlight/20 flex items-center justify-center">
+            <div className="flex items-start gap-3 max-w-[85%]">
+              <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary/20 to-chat-highlight/20 flex items-center justify-center flex-shrink-0 mt-1">
                 <span className="text-sm">{config.persona?.emoji || "🌟"}</span>
               </div>
               <div className="bg-chat-coach rounded-2xl rounded-tl-md px-4 py-3 shadow-soft">
@@ -282,18 +283,16 @@ export default function CoachChat() {
             </div>
           )}
 
+          {/* Quick action pills */}
+          {quickActions.length > 0 && (
+            <div className="w-full pl-[44px]"> {/* Add indentation to align with bubble content (32px avatar + 12px gap) */}
+              <QuickActionPills actions={quickActions} onSelect={handleQuickAction} />
+            </div>
+          )}
+
           <div ref={messagesEndRef} />
         </div>
       </div>
-
-      {/* Quick action pills */}
-      <AnimatePresence>
-        {quickActions.length > 0 && (
-          <div className="max-w-3xl mx-auto w-full">
-            <QuickActionPills actions={quickActions} onSelect={handleQuickAction} />
-          </div>
-        )}
-      </AnimatePresence>
 
       {/* Input */}
       <ChatInput onSend={handleSendMessage} />

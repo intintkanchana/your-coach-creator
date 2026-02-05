@@ -1,20 +1,31 @@
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Sparkles } from "lucide-react";
+import { Sparkles, ChevronLeft } from "lucide-react";
 
 interface WelcomeStepProps {
   onStart: () => void;
 }
 
 export function WelcomeStep({ onStart }: WelcomeStepProps) {
+  const navigate = useNavigate();
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 0.5 }}
-      className="flex flex-col items-center justify-center text-center px-4 py-12"
+      className="relative flex flex-col items-center justify-center text-center px-4 py-12"
     >
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={() => navigate("/coaches")}
+        className="absolute left-0 top-0 h-8 w-8 text-muted-foreground hover:text-foreground"
+      >
+        <ChevronLeft className="h-5 w-5" />
+      </Button>
       <motion.div
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
@@ -50,7 +61,7 @@ export function WelcomeStep({ onStart }: WelcomeStepProps) {
         transition={{ delay: 0.4 }}
         className="text-lg text-muted-foreground max-w-md mb-8 leading-relaxed"
       >
-        Let's build someone who supports you, understands you, and grows with you — 
+        Let's build someone who supports you, understands you, and grows with you —
         step by step. 💛
       </motion.p>
 

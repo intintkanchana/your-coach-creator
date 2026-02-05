@@ -2,10 +2,11 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowRight, Lightbulb } from "lucide-react";
+import { ArrowRight, Lightbulb, ChevronLeft } from "lucide-react";
 
 interface GoalInputStepProps {
   onSubmit: (goal: string) => void;
+  onBack: () => void;
 }
 
 const prompts = [
@@ -15,7 +16,7 @@ const prompts = [
   "I'm thinking about my career direction",
 ];
 
-export function GoalInputStep({ onSubmit }: GoalInputStepProps) {
+export function GoalInputStep({ onSubmit, onBack }: GoalInputStepProps) {
   const [goal, setGoal] = useState("");
 
   const handleSubmit = () => {
@@ -30,8 +31,16 @@ export function GoalInputStep({ onSubmit }: GoalInputStepProps) {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 0.5 }}
-      className="flex flex-col items-center px-4 py-8 max-w-xl mx-auto"
+      className="relative flex flex-col items-center px-4 py-8 max-w-xl mx-auto"
     >
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={onBack}
+        className="absolute left-0 top-0 h-8 w-8 text-muted-foreground hover:text-foreground"
+      >
+        <ChevronLeft className="h-5 w-5" />
+      </Button>
       <motion.div
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
@@ -56,7 +65,7 @@ export function GoalInputStep({ onSubmit }: GoalInputStepProps) {
         transition={{ delay: 0.3 }}
         className="text-muted-foreground text-center mb-8 max-w-md"
       >
-        It can be a goal, a habit, or something you've been thinking about lately. 
+        It can be a goal, a habit, or something you've been thinking about lately.
         Don't worry about getting it perfect — we'll figure it out together.
       </motion.p>
 
@@ -78,7 +87,7 @@ export function GoalInputStep({ onSubmit }: GoalInputStepProps) {
             <Lightbulb className="h-4 w-4" />
             <span>Need inspiration?</span>
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {prompts.map((prompt, i) => (
               <motion.button
                 key={prompt}
@@ -86,7 +95,7 @@ export function GoalInputStep({ onSubmit }: GoalInputStepProps) {
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.5 + i * 0.1 }}
                 onClick={() => setGoal(prompt)}
-                className="px-3 py-2 text-sm bg-secondary hover:bg-secondary/80 rounded-xl transition-colors text-secondary-foreground"
+                className="p-3 text-sm text-left bg-secondary hover:bg-secondary/80 rounded-xl transition-colors text-secondary-foreground h-full flex items-center"
               >
                 {prompt}
               </motion.button>

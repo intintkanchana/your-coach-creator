@@ -3,13 +3,14 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { CoachPersona } from "@/types/coach";
 import { coachPersonas } from "@/data/coachOptions";
-import { Check, ArrowRight } from "lucide-react";
+import { Check, ArrowRight, ChevronLeft } from "lucide-react";
 
 interface PersonaSelectStepProps {
   onSelect: (persona: CoachPersona) => void;
+  onBack: () => void;
 }
 
-export function PersonaSelectStep({ onSelect }: PersonaSelectStepProps) {
+export function PersonaSelectStep({ onSelect, onBack }: PersonaSelectStepProps) {
   const [selected, setSelected] = useState<string | null>(null);
 
   const handleContinue = () => {
@@ -25,8 +26,16 @@ export function PersonaSelectStep({ onSelect }: PersonaSelectStepProps) {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 0.5 }}
-      className="flex flex-col items-center px-4 py-8 max-w-2xl mx-auto"
+      className="relative flex flex-col items-center px-4 py-8 max-w-2xl mx-auto"
     >
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={onBack}
+        className="absolute left-0 top-0 h-8 w-8 text-muted-foreground hover:text-foreground"
+      >
+        <ChevronLeft className="h-5 w-5" />
+      </Button>
       <motion.div
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
@@ -51,7 +60,7 @@ export function PersonaSelectStep({ onSelect }: PersonaSelectStepProps) {
         transition={{ delay: 0.3 }}
         className="text-muted-foreground text-center mb-8 max-w-md"
       >
-        How would you like me to support you? This affects how encouragement and feedback feel. 
+        How would you like me to support you? This affects how encouragement and feedback feel.
         You can always change this later!
       </motion.p>
 
@@ -70,10 +79,9 @@ export function PersonaSelectStep({ onSelect }: PersonaSelectStepProps) {
             onClick={() => setSelected(persona.id)}
             className={`
               relative flex items-start gap-4 p-5 rounded-2xl border-2 text-left transition-all duration-300
-              ${
-                selected === persona.id
-                  ? "border-primary bg-primary/5 shadow-glow"
-                  : "border-border bg-card hover:border-primary/30 hover:shadow-soft"
+              ${selected === persona.id
+                ? "border-primary bg-primary/5 shadow-glow"
+                : "border-border bg-card hover:border-primary/30 hover:shadow-soft"
               }
             `}
           >

@@ -64,9 +64,9 @@ export function ChatMessage({ message, coachEmoji = "🌟", onFormSubmit }: Chat
               <p className="text-sm">{message.content}</p>
             </div>
           )}
-          <img 
-            src={message.imageUrl} 
-            alt={message.imageAlt || "Coach shared image"} 
+          <img
+            src={message.imageUrl}
+            alt={message.imageAlt || "Coach shared image"}
             className="rounded-xl max-w-full shadow-soft"
           />
         </div>
@@ -91,7 +91,7 @@ export function ChatMessage({ message, coachEmoji = "🌟", onFormSubmit }: Chat
               <p className="text-sm">{message.content}</p>
             </div>
           )}
-          <MiniAppForm 
+          <MiniAppForm
             fields={message.formFields}
             submitted={message.formSubmitted || false}
             submittedData={message.formData}
@@ -108,9 +108,9 @@ export function ChatMessage({ message, coachEmoji = "🌟", onFormSubmit }: Chat
       <motion.div
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
-        className="flex gap-3 max-w-[85%]"
+        className="flex items-start gap-3 max-w-[85%]"
       >
-        <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary/20 to-chat-highlight/20 flex items-center justify-center flex-shrink-0">
+        <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary/20 to-chat-highlight/20 flex items-center justify-center flex-shrink-0 mt-1">
           <span className="text-sm">{coachEmoji}</span>
         </div>
         <div className="bg-chat-coach text-chat-coach-foreground rounded-2xl rounded-tl-md px-4 py-3 shadow-soft">

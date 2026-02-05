@@ -25,7 +25,7 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       onSubmit={handleSubmit}
-      className="sticky bottom-0 bg-background/95 backdrop-blur-sm border-t border-border px-4 py-3"
+      className="w-full bg-background/95 backdrop-blur-sm border-t border-border px-4 py-3"
     >
       <div className="flex items-center gap-2 max-w-3xl mx-auto">
         {/* Attachment buttons */}

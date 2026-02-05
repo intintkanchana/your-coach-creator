@@ -3,14 +3,15 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { CoachDirection } from "@/types/coach";
 import { generateDirections } from "@/data/coachOptions";
-import { RefreshCw, Check } from "lucide-react";
+import { RefreshCw, Check, ChevronLeft } from "lucide-react";
 
 interface DirectionSelectStepProps {
   goal: string;
   onSelect: (direction: CoachDirection) => void;
+  onBack: () => void;
 }
 
-export function DirectionSelectStep({ goal, onSelect }: DirectionSelectStepProps) {
+export function DirectionSelectStep({ goal, onSelect, onBack }: DirectionSelectStepProps) {
   const [directions, setDirections] = useState<CoachDirection[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -49,8 +50,16 @@ export function DirectionSelectStep({ goal, onSelect }: DirectionSelectStepProps
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 0.5 }}
-      className="flex flex-col items-center px-4 py-8 max-w-2xl mx-auto"
+      className="relative flex flex-col items-center px-4 py-8 max-w-2xl mx-auto"
     >
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={onBack}
+        className="absolute left-0 top-0 h-8 w-8 text-muted-foreground hover:text-foreground"
+      >
+        <ChevronLeft className="h-5 w-5" />
+      </Button>
       <motion.div
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
@@ -75,7 +84,7 @@ export function DirectionSelectStep({ goal, onSelect }: DirectionSelectStepProps
         transition={{ delay: 0.3 }}
         className="text-muted-foreground text-center mb-8 max-w-md"
       >
-        Choose the one that feels right — or we can try again. 
+        Choose the one that feels right — or we can try again.
         There's no wrong answer here.
       </motion.p>
 
@@ -117,10 +126,9 @@ export function DirectionSelectStep({ goal, onSelect }: DirectionSelectStepProps
                   onClick={() => setSelected(direction.id)}
                   className={`
                     relative flex items-start gap-4 p-5 rounded-2xl border-2 text-left transition-all duration-300
-                    ${
-                      selected === direction.id
-                        ? "border-primary bg-primary/5 shadow-glow"
-                        : "border-border bg-card hover:border-primary/30 hover:shadow-soft"
+                    ${selected === direction.id
+                      ? "border-primary bg-primary/5 shadow-glow"
+                      : "border-border bg-card hover:border-primary/30 hover:shadow-soft"
                     }
                   `}
                 >
@@ -142,11 +150,11 @@ export function DirectionSelectStep({ goal, onSelect }: DirectionSelectStepProps
               ))}
             </div>
 
-            <div className="flex items-center justify-center gap-4 pt-4">
+            <div className="flex flex-col-reverse sm:flex-row gap-3 pt-4 w-full">
               <Button
                 variant="outline"
                 onClick={handleRegenerate}
-                className="rounded-xl"
+                className="w-full sm:flex-1 rounded-xl py-6"
               >
                 <RefreshCw className="mr-2 h-4 w-4" />
                 Try Different Options
@@ -156,7 +164,7 @@ export function DirectionSelectStep({ goal, onSelect }: DirectionSelectStepProps
                 onClick={handleContinue}
                 disabled={!selected}
                 size="lg"
-                className="px-8 rounded-2xl"
+                className="w-full sm:flex-1 rounded-xl py-6"
               >
                 This Feels Right
               </Button>

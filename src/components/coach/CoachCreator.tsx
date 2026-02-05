@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { AnimatePresence } from "framer-motion";
 import { Step, CoachConfig, CoachDirection, CoachPersona, VitalSign } from "@/types/coach";
 import { ProgressIndicator } from "./ProgressIndicator";
@@ -19,6 +19,11 @@ const initialConfig: CoachConfig = {
 export function CoachCreator() {
   const [step, setStep] = useState<Step>("welcome");
   const [config, setConfig] = useState<CoachConfig>(initialConfig);
+
+  // Scroll to top when step changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [step]);
 
   const handleStart = useCallback(() => {
     setStep("describe-goal");
@@ -64,7 +69,11 @@ export function CoachCreator() {
           )}
 
           {step === "describe-goal" && (
-            <GoalInputStep key="goal" onSubmit={handleGoalSubmit} />
+            <GoalInputStep
+              key="goal"
+              onSubmit={handleGoalSubmit}
+              onBack={() => setStep("welcome")} // Back to welcome
+            />
           )}
 
           {step === "select-direction" && (
@@ -72,15 +81,24 @@ export function CoachCreator() {
               key="direction"
               goal={config.goal}
               onSelect={handleDirectionSelect}
+              onBack={() => setStep("describe-goal")} // Back to goal input
             />
           )}
 
           {step === "select-persona" && (
-            <PersonaSelectStep key="persona" onSelect={handlePersonaSelect} />
+            <PersonaSelectStep
+              key="persona"
+              onSelect={handlePersonaSelect}
+              onBack={() => setStep("select-direction")} // Back to direction select
+            />
           )}
 
           {step === "select-vitals" && (
-            <VitalsSelectStep key="vitals" onSelect={handleVitalsSelect} />
+            <VitalsSelectStep
+              key="vitals"
+              onSelect={handleVitalsSelect}
+              onBack={() => setStep("select-persona")} // Back to persona select
+            />
           )}
 
           {step === "summary" && (
