@@ -177,7 +177,7 @@ const CoachList = () => {
 
       {/* Sign Out Confirmation Dialog */}
       <Dialog open={showSignOutDialog} onOpenChange={setShowSignOutDialog}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="w-[90%] sm:max-w-md rounded-2xl">
           <DialogHeader>
             <DialogTitle className="text-center">🚪</DialogTitle>
             <DialogDescription className="text-center text-lg">
