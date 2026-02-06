@@ -81,6 +81,10 @@ export function CoachCreator() {
     }
   }, [toast]);
 
+  const handleRegenerate = useCallback(() => {
+    handleGoalSubmit(config.goal);
+  }, [handleGoalSubmit, config.goal]);
+
   const handleDirectionSelect = useCallback(async (direction: CoachDirection) => {
     setConfig((prev) => ({ ...prev, direction }));
     // Here we would ideally fetch the next step (personas)
@@ -131,6 +135,8 @@ export function CoachCreator() {
               key="direction"
               goal={config.goal}
               directions={directions}
+              isLoading={isLoading}
+              onRegenerate={handleRegenerate}
               onSelect={handleDirectionSelect}
               onBack={() => setStep("describe-goal")} // Back to goal input
             />
