@@ -1,0 +1,129 @@
+import { FastifyInstance } from 'fastify';
+import { requireAuth } from '../middleware/auth';
+import { creationAgentService, CreationStep } from '../services/creation-agent';
+import { coachService } from '../services/coach';
+
+export async function creationRoutes(fastify: FastifyInstance) {
+  
+  // Endpoint to send a message to the agent (triggers generation for current step)
+  fastify.post('/api/coach/create/chat', { 
+    preHandler: requireAuth,
+    schema: {
+        description: 'Send a message to the creation agent to generate options',
+        tags: ['Creation'],
+        security: [{ apiKey: [] }],
+        body: {
+            type: 'object',
+            properties: {
+                message: { 
+                    description: 'User input or selection from previous step',
+                    oneOf: [{ type: 'string' }, { type: 'object' }] 
+                }
+            }
+        },
+        response: {
+            200: {
+                type: 'object',
+                properties: {
+                    step: { type: 'string' },
+                    ui_data: { type: 'object', additionalProperties: true }
+                }
+            }
+        }
+    }
+  }, async (request, reply) => {
+    const user = request.user!;
+    const { message } = request.body as { message: any };
+    
+    // Delegate to service
+    const result = await creationAgentService.handleMessage(user.id, message);
+    return result;
+  });
+
+  // Endpoint to advance to the next step (client confirms selection)
+  fastify.post('/api/coach/create/advance', { 
+    preHandler: requireAuth,
+    schema: {
+        description: 'Advance the creation workflow to the next step',
+        tags: ['Creation'],
+        security: [{ apiKey: [] }],
+        body: {
+            type: 'object',
+            properties: {
+                nextStep: { type: 'string' },
+                data: { type: 'object', additionalProperties: true }
+            },
+            required: ['nextStep']
+        },
+        response: {
+            200: {
+                type: 'object',
+                properties: {
+                    success: { type: 'boolean' },
+                    currentStep: { type: 'string' }
+                }
+            }
+        }
+    }
+  }, async (request, reply) => {
+    const user = request.user!;
+    const { nextStep, data } = request.body as { nextStep: CreationStep; data: any };
+    
+    creationAgentService.advanceStep(user.id, nextStep, data);
+    return { success: true, currentStep: nextStep };
+  });
+
+  // Endpoint to finalize and save the coach
+  fastify.post('/api/coach/create/finalize', { 
+    preHandler: requireAuth,
+    schema: {
+        description: 'Finalize and save the created coach',
+        tags: ['Creation'],
+        security: [{ apiKey: [] }],
+        response: {
+            200: {
+                type: 'object',
+                properties: {
+                    success: { type: 'boolean' },
+                    coach: { 
+                        type: 'object',
+                        properties: {
+                            id: { type: 'number' },
+                            name: { type: 'string' },
+                            type: { type: 'string' },
+                            system_instruction: { type: 'string' },
+                            user_id: { type: 'number' }
+                        }
+                    }
+                }
+            }
+        }
+    }
+  }, async (request, reply) => {
+      const user = request.user!;
+      const session = creationAgentService.getOrCreateSession(user.id);
+      
+      // Construct final coach object from session data
+      const { coach_name, coach_bio, selected_activity_name, vital_signs } = session.data;
+      
+      // We need to map this to our DB schema. 
+      // The 'system_instruction' needs to be synthesized or we use the bio + role.
+      // For now, we create a simple instruction based on the gathered data.
+      
+      const systemInstruction = `You are ${coach_name}, a ${selected_activity_name} coach. 
+Bio: ${coach_bio}.
+Your goal is to help the user track: ${vital_signs.map((v:any) => v.label).join(', ')}.`;
+
+      const newCoach = coachService.createCoach({
+          user_id: user.id, 
+          name: coach_name, 
+          type: selected_activity_name, // type
+          system_instruction: systemInstruction
+      });
+      
+      // Cleanup session
+      creationAgentService.clearSession(user.id);
+      
+      return { success: true, coach: newCoach };
+  });
+}
