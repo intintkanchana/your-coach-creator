@@ -8,6 +8,7 @@ import { DirectionSelectStep } from "./DirectionSelectStep";
 import { PersonaSelectStep } from "./PersonaSelectStep";
 import { VitalsSelectStep } from "./VitalsSelectStep";
 import { SummaryStep } from "./SummaryStep";
+import { useToast } from "@/components/ui/use-toast";
 
 const initialConfig: CoachConfig = {
   goal: "",
@@ -16,9 +17,14 @@ const initialConfig: CoachConfig = {
   vitalSigns: [],
 };
 
+const API_URL = "http://localhost:4000/api";
+
 export function CoachCreator() {
   const [step, setStep] = useState<Step>("welcome");
   const [config, setConfig] = useState<CoachConfig>(initialConfig);
+  const [isLoading, setIsLoading] = useState(false);
+  const [directions, setDirections] = useState<CoachDirection[]>([]);
+  const { toast } = useToast();
 
   // Scroll to top when step changes
   useEffect(() => {
@@ -29,13 +35,56 @@ export function CoachCreator() {
     setStep("describe-goal");
   }, []);
 
-  const handleGoalSubmit = useCallback((goal: string) => {
-    setConfig((prev) => ({ ...prev, goal }));
-    setStep("select-direction");
-  }, []);
+  const handleGoalSubmit = useCallback(async (goal: string) => {
+    setIsLoading(true);
+    try {
+      const token = localStorage.getItem("sessionToken");
+      if (!token) throw new Error("No session token found");
 
-  const handleDirectionSelect = useCallback((direction: CoachDirection) => {
+      const response = await fetch(`${API_URL}/coach/create/chat`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": token,
+        },
+        body: JSON.stringify({ message: goal }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to generate options");
+      }
+
+      const data = await response.json();
+
+      // Map backend response to frontend types
+      // Backend returns: { ui_data: { user_original_goal, rationale, options: [...] } }
+      const options = data.ui_data.options.map((opt: any, index: number) => ({
+        id: `opt-${index}`,
+        title: opt.activity_name,
+        description: opt.description,
+        emoji: opt.emoji || "✨", // Fallback if emoji missing
+      }));
+
+      setDirections(options);
+      setConfig((prev) => ({ ...prev, goal }));
+      setStep("select-direction");
+
+    } catch (error) {
+      console.error("Error generating options:", error);
+      toast({
+        title: "Error",
+        description: "Failed to generate coaching options. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }, [toast]);
+
+  const handleDirectionSelect = useCallback(async (direction: CoachDirection) => {
     setConfig((prev) => ({ ...prev, direction }));
+    // Here we would ideally fetch the next step (personas)
+    // For now, just advance UI
     setStep("select-persona");
   }, []);
 
@@ -73,6 +122,7 @@ export function CoachCreator() {
               key="goal"
               onSubmit={handleGoalSubmit}
               onBack={() => setStep("welcome")} // Back to welcome
+              isLoading={isLoading}
             />
           )}
 
@@ -80,6 +130,7 @@ export function CoachCreator() {
             <DirectionSelectStep
               key="direction"
               goal={config.goal}
+              directions={directions}
               onSelect={handleDirectionSelect}
               onBack={() => setStep("describe-goal")} // Back to goal input
             />

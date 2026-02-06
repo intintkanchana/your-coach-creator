@@ -65,6 +65,7 @@ Analyze the {{user_goal}}. Generate 3 distinct "Refined Activities" that the use
 1. **Distinct Angles:** Don't just give 3 versions of the same thing. Offer variety (e.g., one physical, one mental, one creative). This is strictly depending on the intended activity.
 2. **Measurable (Vital Signs Ready):** Ensure each option has obvious potential for data tracking (e.g., numbers, photos, duration).
 3. **Low Friction:** The activity should feel exciting and small, not like "work."
+4. **Visual:** Include a relevant emoji for each option.
 [OUTPUT FORMAT]
 Provide valid JSON with a list of 3 options.
 {
@@ -74,7 +75,8 @@ Provide valid JSON with a list of 3 options.
     {
         "activity_name": "String (Catchy Title)",
         "description": "String (One sentence pitch)",
-        "potential_vital_sign": "String (Example of what they'd measure)"
+        "potential_vital_sign": "String (Example of what they'd measure)",
+        "emoji": "String (Single emoji char)"
     }
     ]
 }`;
