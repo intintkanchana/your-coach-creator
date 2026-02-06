@@ -8,26 +8,32 @@ import CoachList from "./pages/CoachList";
 import Index from "./pages/Index";
 import CoachChat from "./pages/CoachChat";
 import NotFound from "./pages/NotFound";
+import { AuthProvider } from "./lib/auth-context";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 
 const queryClient = new QueryClient();
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Landing />} />
-          <Route path="/coaches" element={<CoachList />} />
-          <Route path="/create" element={<Index />} />
-          <Route path="/chat" element={<CoachChat />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
+  <GoogleOAuthProvider clientId="204524688402-p1004vh1jovje3mnm0trubhl6ulnr8cd.apps.googleusercontent.com">
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <AuthProvider>
+            <Routes>
+              <Route path="/" element={<Landing />} />
+              <Route path="/coaches" element={<CoachList />} />
+              <Route path="/create" element={<Index />} />
+              <Route path="/chat" element={<CoachChat />} />
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </AuthProvider>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  </GoogleOAuthProvider>
 );
 
 export default App;

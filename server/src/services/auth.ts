@@ -10,39 +10,52 @@ export interface User {
   google_id: string;
   email: string;
   name: string;
+  picture?: string;
   session_token?: string;
 }
 
 export const authService = {
   async verifyGoogleToken(token: string) {
-    // If no client ID configured yet, we might skip verification for dev or throw error
-    if (!CONFIG.GOOGLE_CLIENT_ID) {
-        throw new Error("GOOGLE_CLIENT_ID not configured on server");
-    }
-
-    const ticket = await client.verifyIdToken({
-      idToken: token,
-      audience: CONFIG.GOOGLE_CLIENT_ID,
-    });
-    const payload = ticket.getPayload();
-    if (!payload) throw new Error('Invalid token payload');
+    // With @react-oauth/google useGoogleLogin (Implicit Flow), we get an access token.
+    // We need to fetch user info from Google API using this token.
     
-    return {
-      google_id: payload.sub,
-      email: payload.email,
-      name: payload.name || 'Unknown',
-    };
+    // Using fetch to get user info. 
+    // Assuming Node environment (18+ has fetch) or need node-fetch.
+    // If fetch is not available, we can use client.request if available or axios.
+    // Since this is a new execution, let's try fetch.
+    try {
+        const response = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to fetch user info from Google');
+        }
+        
+        const payload = await response.json();
+        
+        return {
+            google_id: payload.sub,
+            email: payload.email,
+            name: payload.name || 'Unknown',
+            picture: payload.picture
+        };
+    } catch (error) {
+        console.error("Token verification failed", error);
+        throw new Error('Invalid or expired token');
+    }
   },
 
-  loginUser: (googleUser: { google_id: string; email?: string; name: string }) => {
+  loginUser: (googleUser: { google_id: string; email?: string; name: string; picture?: string }) => {
     const sessionToken = crypto.randomUUID();
     
     const upsertStmt = db.prepare(`
-      INSERT INTO users (google_id, email, name, session_token)
-      VALUES (@google_id, @email, @name, @session_token)
+      INSERT INTO users (google_id, email, name, picture, session_token)
+      VALUES (@google_id, @email, @name, @picture, @session_token)
       ON CONFLICT(google_id) DO UPDATE SET
         session_token = @session_token,
         name = @name,
+        picture = @picture,
         email = COALESCE(@email, email)
       RETURNING *
     `);
@@ -51,6 +64,7 @@ export const authService = {
       google_id: googleUser.google_id,
       email: googleUser.email || '',
       name: googleUser.name,
+      picture: googleUser.picture || null,
       session_token: sessionToken,
     }) as User;
 

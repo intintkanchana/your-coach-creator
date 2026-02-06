@@ -10,6 +10,7 @@ export function initDb() {
       google_id TEXT UNIQUE NOT NULL,
       email TEXT NOT NULL,
       name TEXT,
+      picture TEXT,
       session_token TEXT
     );
 

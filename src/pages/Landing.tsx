@@ -2,22 +2,39 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/lib/auth-context";
+import { useGoogleLogin } from "@react-oauth/google";
 
 const Landing = () => {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = async () => {
-    setIsLoading(true);
-    // Simulate Google OAuth loading
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    navigate("/coaches");
+  const googleLogin = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      try {
+        setIsLoading(true);
+        // tokenResponse has access_token
+        await login(tokenResponse.access_token);
+      } catch (e) {
+        console.error("Login failed", e);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    onError: () => {
+      console.error("Login Failed");
+      setIsLoading(false);
+    }
+  });
+
+  const handleLoginClick = () => {
+    googleLogin();
   };
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center px-6">
       <div className="flex flex-col items-center text-center max-w-md">
-        {/* Animated Hero Emoji */}
         <motion.div
           className="text-8xl mb-8"
           animate={{ y: [0, -10, 0] }}
@@ -26,7 +43,6 @@ const Landing = () => {
           🌱
         </motion.div>
 
-        {/* Headline */}
         <motion.h1
           className="text-4xl md:text-5xl font-bold text-chat-user mb-4"
           initial={{ opacity: 0, y: 20 }}
@@ -36,7 +52,6 @@ const Landing = () => {
           Small Steps, Big Change.
         </motion.h1>
 
-        {/* Sub-headline */}
         <motion.p
           className="text-lg text-muted-foreground mb-12"
           initial={{ opacity: 0, y: 20 }}
@@ -46,16 +61,16 @@ const Landing = () => {
           Your personal AI squad for building better habits, one tracer bullet at a time.
         </motion.p>
 
-        {/* Google Sign In Button */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6 }}
+          className="relative"
         >
           <Button
-            onClick={handleLogin}
+            onClick={handleLoginClick}
             disabled={isLoading}
-            className="bg-card text-foreground border border-border shadow-soft hover:shadow-md transition-all duration-200 px-6 py-6 text-base font-medium rounded-xl flex items-center gap-3"
+            className="bg-card text-foreground border border-border shadow-soft hover:shadow-md transition-all duration-200 px-6 py-6 text-base font-medium rounded-xl flex items-center gap-3 cursor-pointer"
             variant="outline"
           >
             {isLoading ? (
@@ -72,7 +87,7 @@ const Landing = () => {
                 />
                 <path
                   fill="#34A853"
-                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.04-3.71 1.04-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
                 />
                 <path
                   fill="#FBBC05"

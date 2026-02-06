@@ -23,7 +23,8 @@ export async function authRoutes(fastify: FastifyInstance) {
                 id: { type: 'number' },
                 google_id: { type: 'string' },
                 email: { type: 'string' },
-                name: { type: 'string' }
+                name: { type: 'string' },
+                picture: { type: 'string' }
               }
             },
             sessionToken: { type: 'string' }

@@ -5,6 +5,8 @@ import { LogOut, MoreVertical, Settings, Trash2, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { AppHeader } from "@/components/common/AppHeader";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useAuth } from "@/lib/auth-context";
 import {
   Dialog,
   DialogContent,
@@ -46,13 +48,14 @@ const mockCoaches: Coach[] = [
 
 const CoachList = () => {
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
   const [coaches, setCoaches] = useState<Coach[]>(mockCoaches);
   const [showSignOutDialog, setShowSignOutDialog] = useState(false);
   const [openPopoverId, setOpenPopoverId] = useState<string | null>(null);
 
   const handleSignOut = () => {
     setShowSignOutDialog(false);
-    navigate("/");
+    logout();
   };
 
   const handleCoachClick = (coachId: string) => {
@@ -74,14 +77,25 @@ const CoachList = () => {
       {/* Header */}
       <AppHeader>
         <h1 className="text-xl font-bold text-foreground">My Squad</h1>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setShowSignOutDialog(true)}
-          className="text-muted-foreground hover:text-foreground"
-        >
-          <LogOut className="w-5 h-5" />
-        </Button>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 mr-2">
+            <Avatar className="h-8 w-8">
+              <AvatarImage src={user?.picture} alt={user?.name} referrerPolicy="no-referrer" />
+              <AvatarFallback>{user?.name?.charAt(0) || "U"}</AvatarFallback>
+            </Avatar>
+            <div className="hidden sm:block text-sm font-medium">
+              {user?.name}
+            </div>
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setShowSignOutDialog(true)}
+            className="text-muted-foreground hover:text-foreground"
+          >
+            <LogOut className="w-5 h-5" />
+          </Button>
+        </div>
       </AppHeader>
 
       {/* Coach List */}
