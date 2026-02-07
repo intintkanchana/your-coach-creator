@@ -29,6 +29,8 @@ export function CoachCreator() {
   const [directions, setDirections] = useState<CoachDirection[]>([]);
   const [personas, setPersonas] = useState<CoachPersona[]>([]);
   const [suggestedVitals, setSuggestedVitals] = useState<VitalSign[]>([]);
+  const [inspirationGoals, setInspirationGoals] = useState<string[]>([]);
+  const [isInspirationsLoading, setIsInspirationsLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
   const { user, isLoading: isAuthLoading } = useAuth();
@@ -49,6 +51,33 @@ export function CoachCreator() {
   const handleStart = useCallback(() => {
     setStep("describe-goal");
   }, []);
+
+  const handleFetchInspirations = useCallback(async () => {
+    // Avoid re-fetching if we already have them
+    if (inspirationGoals.length > 0) return;
+
+    try {
+      const token = localStorage.getItem("sessionToken");
+      if (!token) return;
+
+      const response = await fetch(`${API_URL}/coach/create/inspirations`, {
+        method: "GET",
+        headers: {
+          "Authorization": token,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (Array.isArray(data)) {
+          setInspirationGoals(data);
+        }
+      }
+    } catch (error) {
+      console.error("Failed to fetch inspirations", error);
+      // Silently fail, fallback to defaults
+    }
+  }, [inspirationGoals.length]);
 
   const handleGoalSubmit = useCallback(async (goal: string) => {
     setIsLoading(true);
@@ -414,7 +443,7 @@ User Goal: ${config.goal}`;
         {/* Step content */}
         <AnimatePresence mode="wait">
           {step === "welcome" && (
-            <WelcomeStep key="welcome" onStart={handleStart} />
+            <WelcomeStep key="welcome" onStart={handleStart} onPrefetch={handleFetchInspirations} />
           )}
 
           {step === "describe-goal" && (
@@ -423,6 +452,8 @@ User Goal: ${config.goal}`;
               onSubmit={handleGoalSubmit}
               onBack={() => setStep("welcome")} // Back to welcome
               isLoading={isLoading}
+              inspirationGoals={inspirationGoals}
+              areInspirationsLoading={isInspirationsLoading}
             />
           )}
 

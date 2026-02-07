@@ -1,14 +1,22 @@
 import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Sparkles, ChevronLeft } from "lucide-react";
 
 interface WelcomeStepProps {
   onStart: () => void;
+  onPrefetch?: () => void;
 }
 
-export function WelcomeStep({ onStart }: WelcomeStepProps) {
+export function WelcomeStep({ onStart, onPrefetch }: WelcomeStepProps) {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (onPrefetch) {
+      onPrefetch();
+    }
+  }, [onPrefetch]);
 
   return (
     <motion.div

@@ -5,6 +5,25 @@ import { coachService } from '../services/coach';
 
 export async function creationRoutes(fastify: FastifyInstance) {
   
+  // Endpoint to get inspiration goals
+  fastify.get('/api/coach/create/inspirations', {
+    preHandler: requireAuth,
+    schema: {
+        description: 'Get AI-generated inspiration goals',
+        tags: ['Creation'],
+        security: [{ apiKey: [] }],
+        response: {
+            200: {
+                type: 'array',
+                items: { type: 'string' }
+            }
+        }
+    }
+  }, async (request, reply) => {
+    const goals = await creationAgentService.suggestGoals();
+    return goals;
+  });
+  
   // Endpoint to send a message to the agent (triggers generation for current step)
   fastify.post('/api/coach/create/chat', { 
     preHandler: requireAuth,

@@ -8,17 +8,14 @@ interface GoalInputStepProps {
   onSubmit: (goal: string) => void;
   onBack: () => void;
   isLoading?: boolean;
+  inspirationGoals?: string[];
+  areInspirationsLoading?: boolean;
 }
 
-const prompts = [
-  "I want to feel more confident at work",
-  "I'd like to build a consistent exercise routine",
-  "I want to manage my stress better",
-  "I'm thinking about my career direction",
-];
-
-export function GoalInputStep({ onSubmit, onBack, isLoading = false }: GoalInputStepProps) {
+export function GoalInputStep({ onSubmit, onBack, isLoading = false, inspirationGoals, areInspirationsLoading = false }: GoalInputStepProps) {
   const [goal, setGoal] = useState("");
+
+  const prompts = inspirationGoals || [];
 
   const handleSubmit = () => {
     if (goal.trim()) {
@@ -112,18 +109,27 @@ export function GoalInputStep({ onSubmit, onBack, isLoading = false }: GoalInput
                 <span>Need inspiration?</span>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {prompts.map((prompt, i) => (
-                  <motion.button
-                    key={prompt}
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.5 + i * 0.1 }}
-                    onClick={() => setGoal(prompt)}
-                    className="p-3 text-sm text-left bg-secondary hover:bg-secondary/80 rounded-xl transition-colors text-secondary-foreground h-full flex items-center"
-                  >
-                    {prompt}
-                  </motion.button>
-                ))}
+                {areInspirationsLoading ? (
+                  Array.from({ length: 4 }).map((_, i) => (
+                    <div
+                      key={i}
+                      className="h-10 rounded-xl bg-secondary/50 animate-pulse"
+                    />
+                  ))
+                ) : (
+                  prompts.map((prompt, i) => (
+                    <motion.button
+                      key={prompt}
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.5 + i * 0.1 }}
+                      onClick={() => setGoal(prompt)}
+                      className="p-3 text-sm text-left bg-secondary hover:bg-secondary/80 rounded-xl transition-colors text-secondary-foreground h-full flex items-center"
+                    >
+                      {prompt}
+                    </motion.button>
+                  ))
+                )}
               </div>
             </div>
 

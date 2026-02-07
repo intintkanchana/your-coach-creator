@@ -240,5 +240,42 @@ Valid JSON only.
       context.step = nextStep;
       context.data = { ...context.data, ...dataToMerge };
       this.updateSession(userId, context);
+  },
+
+  async suggestGoals() {
+    const systemRole = `
+[SYSTEM ROLE]
+You are a "Motivation Muse".
+[TASK]
+Generate 4 distinct goal inspirations for a user who wants to build a new habit or achieve a goal.
+[CATEGORIES]
+1. Career/Work
+2. Happiness/Stress Management
+3. Sports/Fitness
+4. Finance/Money
+[OUTPUT FORMAT]
+Return a JSON array of strings. Each string should be a first-person statement (e.g., "I want to...").
+Example:
+[
+  "I want to feel more confident in my leadership skills",
+  "I want to reduce my daily anxiety",
+  "I'd like to run my first 5k",
+  "I want to save for a dream vacation"
+]
+`;
+    // We don't need history for this one-off generation
+    const responseText = await geminiService.chat([], "Generate 4 goal inspirations.", systemRole);
+
+    try {
+        const cleanJson = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
+        const goals = JSON.parse(cleanJson);
+        if (Array.isArray(goals)) {
+            return goals;
+        }
+        return [];
+    } catch (e) {
+        console.error("Failed to parse goals", responseText);
+        return [];
+    }
   }
 };
