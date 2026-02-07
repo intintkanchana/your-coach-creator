@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { CoachConfig } from "@/types/coach";
-import { Sparkles, Heart } from "lucide-react";
+import { Sparkles, Heart, RotateCcw } from "lucide-react";
 
 interface SummaryStepProps {
   config: CoachConfig;
@@ -196,10 +196,12 @@ export function SummaryStep({ config, isLoading = false, onStartOver }: SummaryS
             className="flex flex-col-reverse sm:flex-row items-center justify-center gap-3 pt-8 w-full"
           >
             <Button
-              variant="ghost"
+              variant="outline"
               onClick={onStartOver}
-              className="text-muted-foreground hover:text-foreground"
+              size="lg"
+              className="w-full sm:w-auto px-8 py-6 text-lg rounded-2xl border-2 hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-all"
             >
+              <RotateCcw className="mr-2 h-5 w-5" />
               Start Over
             </Button>
             <Button
