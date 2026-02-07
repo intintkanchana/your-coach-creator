@@ -28,6 +28,7 @@ export interface CoachConfig {
   direction: CoachDirection | null;
   persona: CoachPersona | null;
   vitalSigns: VitalSign[];
+  createdAt?: string; // ISO string from DB
 }
 
 export type Step =

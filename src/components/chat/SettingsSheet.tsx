@@ -1,6 +1,6 @@
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { CoachConfig, VitalSign } from "@/types/coach";
-import { Badge } from "@/components/ui/badge";
+import { CoachConfig } from "@/types/coach";
+import { motion } from "framer-motion";
 
 interface SettingsSheetProps {
   open: boolean;
@@ -11,65 +11,86 @@ interface SettingsSheetProps {
 export function SettingsSheet({ open, onOpenChange, config }: SettingsSheetProps) {
   const selectedVitals = config.vitalSigns.filter((v) => v.selected);
 
+  // Helper to get bio description - reusing logic if needed or just display config.persona.description
+  // Ideally this logic should be centralized or we trust the API to return the description.
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-[320px] sm:w-[400px]">
-        <SheetHeader>
-          <SheetTitle className="flex items-center gap-2">
+      <SheetContent className="w-[350px] sm:w-[540px] overflow-y-auto">
+        <SheetHeader className="mb-6">
+          <SheetTitle className="flex items-center gap-2 text-xl">
             <span>⚙️</span>
-            <span>Current Protocol</span>
+            <span>Coach Settings</span>
           </SheetTitle>
         </SheetHeader>
 
-        <div className="mt-6 space-y-6">
-          {/* Goal */}
-          <div>
-            <h4 className="text-sm font-medium text-muted-foreground mb-2">Your Goal</h4>
-            <p className="text-foreground">{config.goal || "Not set"}</p>
-          </div>
-
-          {/* Direction */}
-          {config.direction && (
-            <div>
-              <h4 className="text-sm font-medium text-muted-foreground mb-2">Focus Area</h4>
-              <div className="flex items-center gap-2">
-                <span className="text-xl">{config.direction.emoji}</span>
-                <span className="font-medium">{config.direction.title}</span>
-              </div>
-            </div>
-          )}
-
-          {/* Persona */}
+        <div className="space-y-6">
+          {/* Feature Coach Card Style */}
           {config.persona && (
-            <div>
-              <h4 className="text-sm font-medium text-muted-foreground mb-2">Coach Personality</h4>
-              <div className="flex items-center gap-2">
-                <span className="text-xl">{config.persona.emoji}</span>
-                <span className="font-medium">{config.persona.name}</span>
+            <div className="w-full bg-gradient-to-br from-primary/10 to-card border-2 border-primary/20 rounded-3xl p-6 text-center relative overflow-hidden">
+              <div className="text-5xl mb-3">
+                {config.persona.emoji}
               </div>
-              <p className="text-sm text-muted-foreground mt-1">{config.persona.description}</p>
+
+              <h3 className="text-xl font-bold text-foreground mb-2">
+                Coach {config.persona.name}
+              </h3>
+
+              <p className="text-muted-foreground italic text-sm leading-relaxed">
+                "{config.persona.description}"
+              </p>
             </div>
           )}
 
-          {/* Vital Signs */}
-          <div>
-            <h4 className="text-sm font-medium text-muted-foreground mb-3">Tracking</h4>
-            {selectedVitals.length > 0 ? (
-              <div className="flex flex-wrap gap-2">
-                {selectedVitals.map((vital) => (
-                  <Badge 
-                    key={vital.id}
-                    variant="secondary"
-                    className="flex items-center gap-1.5 px-3 py-1.5"
-                  >
-                    <span>{vital.emoji}</span>
-                    <span>{vital.name}</span>
-                  </Badge>
-                ))}
+          {/* Summary Card Style */}
+          <div className="w-full bg-card rounded-3xl border-2 border-border p-6 shadow-sm space-y-5">
+            {/* Goal */}
+            <div>
+              <p className="text-sm text-muted-foreground mb-1">Your Goal</p>
+              <p className="text-foreground font-medium text-lg leading-tight">{config.goal || "Not set"}</p>
+            </div>
+
+            {/* Direction */}
+            {config.direction && (
+              <div>
+                <p className="text-sm text-muted-foreground mb-2">Coaching Focus</p>
+                <div className="flex items-center gap-2">
+                  <span className="text-xl">{config.direction.emoji}</span>
+                  <span className="font-medium text-foreground">{config.direction.title}</span>
+                </div>
               </div>
-            ) : (
-              <p className="text-sm text-muted-foreground">No vital signs selected</p>
             )}
+
+            {/* Persona */}
+            {config.persona && (
+              <div>
+                <p className="text-sm text-muted-foreground mb-2">Coach Personality</p>
+                <div className="flex items-center gap-2">
+                  <span className="text-xl">{config.persona.emoji}</span>
+                  <span className="font-medium text-foreground">{config.persona.name}</span>
+                </div>
+              </div>
+            )}
+
+            {/* Vitals */}
+            <div>
+              <p className="text-sm text-muted-foreground mb-3">Tracking</p>
+              {selectedVitals.length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {selectedVitals.map((vital) => (
+                    <span
+                      key={vital.id}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-secondary rounded-full text-sm"
+                    >
+                      <span>{vital.emoji}</span>
+                      <span className="text-secondary-foreground">{vital.name}</span>
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground italic">No vital signs selected</p>
+              )}
+            </div>
           </div>
         </div>
       </SheetContent>

@@ -21,6 +21,10 @@ export function initDb() {
       system_instruction TEXT NOT NULL,
       icon TEXT,
       user_id INTEGER NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      goal TEXT,
+      bio TEXT,
+      vital_signs TEXT,
       FOREIGN KEY(user_id) REFERENCES users(id)
     );
 
@@ -36,11 +40,19 @@ export function initDb() {
     );
   `);
 
-  try {
-    db.exec(`ALTER TABLE coaches ADD COLUMN icon TEXT;`);
-  } catch (e) {
-    // Column likely already exists
-  }
+  const safeAddColumn = (table: string, column: string, definition: string) => {
+    try {
+      db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition};`);
+    } catch (e) {
+      // Column likely already exists
+    }
+  };
+
+  safeAddColumn('coaches', 'icon', 'TEXT');
+  safeAddColumn('coaches', 'created_at', 'DATETIME DEFAULT CURRENT_TIMESTAMP');
+  safeAddColumn('coaches', 'goal', 'TEXT');
+  safeAddColumn('coaches', 'bio', 'TEXT');
+  safeAddColumn('coaches', 'vital_signs', 'TEXT');
 }
 
 export default db;

@@ -130,12 +130,16 @@ Your goal is to help the user track: ${Array.isArray(vital_signs) ? vital_signs.
           user_id: user.id, 
           name: coach_name, 
           type: selected_activity_name, // type
-          system_instruction: systemInstruction
+          system_instruction: systemInstruction,
+          bio: coach_bio,
+          goal: user_goal,
+          vital_signs: vital_signs
       });
       
       // Include all the data the frontend might need for the summary
       const responseCoach = {
           ...newCoach,
+          // DB might return these, but just in case, or if we want to ensure format
           bio: coach_bio,
           goal: user_goal, // ensuring we pass back what we have
           vital_signs: vital_signs

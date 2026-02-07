@@ -97,7 +97,7 @@ const CoachList = () => {
   };
 
   const handleCoachClick = (coachId: string) => {
-    navigate("/chat", { state: { coachId } });
+    navigate(`/chat/${coachId}`);
   };
 
   const handleRetireCoach = (coach: Coach) => {

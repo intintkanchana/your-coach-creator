@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import { ChatHeader } from "@/components/chat/ChatHeader";
 import { ChatMessage } from "@/components/chat/ChatMessage";
@@ -38,9 +38,10 @@ const mockFormFields: FormField[] = [
 ];
 
 export default function CoachChat() {
-  const location = useLocation();
+  const { coachId } = useParams();
   const navigate = useNavigate();
-  const config: CoachConfig = location.state?.config || defaultConfig;
+  const [config, setConfig] = useState<CoachConfig | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   const [messages, setMessages] = useState<ChatMessageType[]>([]);
   const [quickActions, setQuickActions] = useState<QuickAction[]>([]);
@@ -59,22 +60,83 @@ export default function CoachChat() {
     messagesEndRef.current?.scrollIntoView({ block: "nearest" });
   }, [messages, quickActions]);
 
-  // Mock chat flow
   useEffect(() => {
-    if (chatPhase === 0) {
-      // Initial greeting
-      setTimeout(() => {
-        setMessages([
-          {
-            id: "1",
-            type: "coach",
-            content: `Hey there! 👋 I'm Coach ${config.persona?.name || "Sunny"}, and I'm SO excited to work with you on ${config.goal || "your goals"}!`,
-            timestamp: new Date(),
-          },
-        ]);
-        setChatPhase(1);
-      }, 500);
-    }
+    const fetchCoach = async () => {
+      if (!coachId) return;
+
+      try {
+        const token = localStorage.getItem("sessionToken");
+        if (!token) {
+          navigate("/");
+          return;
+        }
+
+        const response = await fetch(`http://localhost:4000/api/coaches/${coachId}`, {
+          headers: {
+            "Authorization": `Bearer ${token}`
+          }
+        });
+
+        if (response.ok) {
+          const coachData = await response.json();
+
+          let parsedVitalSigns = [];
+          try {
+            parsedVitalSigns = typeof coachData.vital_signs === 'string'
+              ? JSON.parse(coachData.vital_signs)
+              : (coachData.vital_signs || []);
+          } catch (e) {
+            console.error("Failed to parse vital signs", e);
+          }
+
+          // Adapt backend data to frontend config format
+          setConfig({
+            goal: coachData.goal || "achieve your goals",
+            direction: {
+              id: coachData.type.toLowerCase(),
+              title: coachData.type,
+              description: "Focus on " + coachData.type,
+              emoji: "🎯",
+            },
+            persona: {
+              id: "custom",
+              name: coachData.name,
+              description: coachData.bio || coachData.system_instruction,
+              emoji: coachData.icon || "🤖",
+            },
+            vitalSigns: parsedVitalSigns,
+            createdAt: coachData.created_at
+          });
+        } else {
+          console.error("Failed to fetch coach details");
+          navigate("/home");
+        }
+      } catch (error) {
+        console.error("Error fetching coach:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchCoach();
+  }, [coachId, navigate]);
+
+  // Mock chat flow - only start when config is loaded
+  useEffect(() => {
+    if (!config || chatPhase !== 0) return;
+
+    // Initial greeting
+    setTimeout(() => {
+      setMessages([
+        {
+          id: "1",
+          type: "coach",
+          content: `Hey there! 👋 I'm Coach ${config.persona?.name || "Sunny"}, and I'm SO excited to work with you!`,
+          timestamp: new Date(),
+        },
+      ]);
+      setChatPhase(1);
+    }, 500);
   }, [chatPhase, config]);
 
   useEffect(() => {
@@ -248,6 +310,17 @@ export default function CoachChat() {
       }, 1000);
     }, 500);
   };
+
+  if (isLoading || !config) {
+    return (
+      <div className="h-[100dvh] bg-background flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-chat-user border-t-transparent rounded-full animate-spin" />
+          <p className="text-muted-foreground">Loading coach...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="h-[100dvh] bg-background flex flex-col overflow-hidden">

@@ -21,7 +21,11 @@ export async function coachRoutes(fastify: FastifyInstance) {
               id: { type: 'number' },
               name: { type: 'string' },
               type: { type: 'string' },
-              icon: { type: 'string' }
+              icon: { type: 'string' },
+              created_at: { type: 'string' },
+              goal: { type: 'string' },
+              bio: { type: 'string' },
+              vital_signs: { type: 'string' }
             }
           }
         }
@@ -31,6 +35,55 @@ export async function coachRoutes(fastify: FastifyInstance) {
     const user = request.user!;
     const coaches = coachService.getCoachesByUser(user.id);
     return coaches;
+  });
+
+  fastify.get('/api/coaches/:id', {
+    preHandler: requireAuth,
+    schema: {
+      description: 'Get a specific coach',
+      tags: ['Coaches'],
+      security: [{ apiKey: [] }],
+      params: {
+        type: 'object',
+        properties: {
+          id: { type: 'number' }
+        }
+      },
+      response: {
+        200: {
+          type: 'object',
+          properties: {
+            id: { type: 'number' },
+            name: { type: 'string' },
+            type: { type: 'string' },
+            system_instruction: { type: 'string' },
+            icon: { type: 'string' },
+            user_id: { type: 'number' },
+            created_at: { type: 'string' },
+            goal: { type: 'string' },
+            bio: { type: 'string' },
+            vital_signs: { type: 'string' }
+          }
+        },
+        404: {
+          type: 'object',
+          properties: {
+            error: { type: 'string' }
+          }
+        }
+      }
+    }
+  }, async (request, reply) => {
+    const user = request.user!;
+    const { id } = request.params as { id: number };
+
+    const coach = coachService.getCoachById(id);
+    
+    if (!coach || coach.user_id !== user.id) {
+      return reply.status(404).send({ error: 'Coach not found' });
+    }
+
+    return coach;
   });
 
   fastify.post('/api/coaches', { 
