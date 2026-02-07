@@ -87,4 +87,45 @@ export async function coachRoutes(fastify: FastifyInstance) {
 
     return coach;
   });
+
+  fastify.delete('/api/coaches/:id', {
+    preHandler: requireAuth,
+    schema: {
+      description: 'Delete a coach',
+      tags: ['Coaches'],
+      security: [{ apiKey: [] }],
+      params: {
+        type: 'object',
+        properties: {
+          id: { type: 'number' }
+        }
+      },
+      response: {
+        200: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean' }
+          }
+        },
+        404: {
+          type: 'object',
+          properties: {
+            error: { type: 'string' }
+          }
+        }
+      }
+    }
+  }, async (request, reply) => {
+    const user = request.user!;
+    const { id } = request.params as { id: number };
+
+    // Validate if coach exists and belongs to user
+    const coach = coachService.getCoachById(id);
+    if (!coach || coach.user_id !== user.id) {
+      return reply.status(404).send({ error: 'Coach not found' });
+    }
+
+    coachService.deleteCoach(id, user.id);
+    return { success: true };
+  });
 }

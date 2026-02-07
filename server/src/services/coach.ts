@@ -32,5 +32,17 @@ export const coachService = {
   getCoachById: (id: number) => {
     const stmt = db.prepare('SELECT * FROM coaches WHERE id = ?');
     return stmt.get(id) as Coach | undefined;
+  },
+
+  deleteCoach: (id: number, userId: number) => {
+    const deleteMessages = db.prepare('DELETE FROM messages WHERE coach_id = ?');
+    const deleteCoach = db.prepare('DELETE FROM coaches WHERE id = ? AND user_id = ?');
+    
+    const transaction = db.transaction(() => {
+      deleteMessages.run(id);
+      return deleteCoach.run(id, userId);
+    });
+
+    return transaction();
   }
 };

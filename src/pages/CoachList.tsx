@@ -49,6 +49,9 @@ const CoachList = () => {
   const [showSignOutDialog, setShowSignOutDialog] = useState(false);
   const [openPopoverId, setOpenPopoverId] = useState<string | null>(null);
 
+  const [coachToDelete, setCoachToDelete] = useState<Coach | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
   useEffect(() => {
     const fetchCoaches = async () => {
       try {
@@ -97,9 +100,35 @@ const CoachList = () => {
     navigate("/chat", { state: { coachId } });
   };
 
-  const handleRetireCoach = (coachId: string) => {
-    setCoaches(coaches.filter((c) => c.id !== coachId));
+  const handleRetireCoach = (coach: Coach) => {
+    setCoachToDelete(coach);
     setOpenPopoverId(null);
+  };
+
+  const confirmRetire = async () => {
+    if (!coachToDelete) return;
+
+    setIsDeleting(true);
+    try {
+      const token = localStorage.getItem("sessionToken");
+      const response = await fetch(`http://localhost:4000/api/coaches/${coachToDelete.id}`, {
+        method: "DELETE",
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        setCoaches(coaches.filter((c) => c.id !== coachToDelete.id));
+        setCoachToDelete(null);
+      } else {
+        console.error("Failed to delete coach");
+      }
+    } catch (error) {
+      console.error("Error deleting coach:", error);
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   const handleEditSettings = (coachId: string) => {
@@ -136,91 +165,151 @@ const CoachList = () => {
       {/* Coach List */}
       <main className="px-4 py-6">
         <div className="max-w-3xl mx-auto space-y-4">
-          {coaches.map((coach, index) => (
+          {coaches.length === 0 && !isLoading ? (
             <motion.div
-              key={coach.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5 }}
+              className="text-center py-12 flex flex-col items-center justify-center space-y-6"
             >
-              <Card className="bg-card shadow-soft hover:shadow-md transition-shadow duration-200 overflow-hidden">
-                <div className="flex items-center p-4">
-                  {/* Clickable area - Coach info */}
-                  <button
-                    onClick={() => handleCoachClick(coach.id)}
-                    className="flex items-center gap-4 flex-1 text-left"
-                  >
-                    <div className="text-4xl">{coach.emoji}</div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-foreground truncate">
-                        {coach.name}
-                      </h3>
-                      <p className="text-sm text-muted-foreground">
-                        {coach.project}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        Last active: {coach.lastActive}
-                      </p>
-                    </div>
-                  </button>
+              <div className="relative">
+                <motion.div
+                  animate={{
+                    y: [0, -10, 0],
+                    rotate: [0, 5, -5, 0]
+                  }}
+                  transition={{
+                    duration: 4,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }}
+                  className="text-8xl filter drop-shadow-xl"
+                >
+                  ✨
+                </motion.div>
+                <motion.div
+                  className="absolute -bottom-2 -right-4 text-6xl"
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: 0.5, type: "spring" }}
+                >
+                  🤖
+                </motion.div>
+              </div>
 
-                  {/* Actions Menu */}
-                  <Popover
-                    open={openPopoverId === coach.id}
-                    onOpenChange={(open) =>
-                      setOpenPopoverId(open ? coach.id : null)
-                    }
-                  >
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="shrink-0 text-muted-foreground hover:text-foreground"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <MoreVertical className="w-5 h-5" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent
-                      align="end"
-                      className="w-48 p-2"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <button
-                        onClick={() => handleEditSettings(coach.id)}
-                        className="flex items-center gap-3 w-full px-3 py-2 text-sm text-foreground hover:bg-muted rounded-md transition-colors"
-                      >
-                        <Settings className="w-4 h-4" />
-                        Edit Settings
-                      </button>
-                      <button
-                        onClick={() => handleRetireCoach(coach.id)}
-                        className="flex items-center gap-3 w-full px-3 py-2 text-sm text-destructive hover:bg-destructive/10 rounded-md transition-colors"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                        Retire Coach
-                      </button>
-                    </PopoverContent>
-                  </Popover>
-                </div>
-              </Card>
+              <div className="space-y-2 max-w-md">
+                <h2 className="text-2xl font-bold text-foreground">
+                  Build Your Dream Squad
+                </h2>
+                <p className="text-muted-foreground leading-relaxed">
+                  Ready to level up? Create your own personalized AI coaches to help you achieve your goals, verify your ideas, or just having fun!
+                </p>
+              </div>
+
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="pt-4"
+              >
+                <button
+                  onClick={() => navigate("/create")}
+                  className="group relative px-8 py-4 bg-chat-user text-white rounded-full font-semibold shadow-lg shadow-chat-user/20 hover:shadow-chat-user/40 transition-all duration-300 flex items-center gap-2 overflow-hidden"
+                >
+                  <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
+                  <Plus className="w-5 h-5" />
+                  <span>Hire check Your First Coach</span>
+                </button>
+              </motion.div>
             </motion.div>
-          ))}
+          ) : (
+            <>
+              {coaches.map((coach, index) => (
+                <motion.div
+                  key={coach.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                >
+                  <Card className="bg-card shadow-soft hover:shadow-md transition-shadow duration-200 overflow-hidden">
+                    <div className="flex items-center p-4">
+                      {/* Clickable area - Coach info */}
+                      <button
+                        onClick={() => handleCoachClick(coach.id)}
+                        className="flex items-center gap-4 flex-1 text-left"
+                      >
+                        <div className="text-4xl">{coach.emoji}</div>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold text-foreground truncate">
+                            {coach.name}
+                          </h3>
+                          <p className="text-sm text-muted-foreground">
+                            {coach.project}
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            Last active: {coach.lastActive}
+                          </p>
+                        </div>
+                      </button>
 
-          {/* Create New Coach Card */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: coaches.length * 0.1 }}
-          >
-            <button
-              onClick={() => navigate("/create")}
-              className="w-full border-2 border-dashed border-chat-user/50 hover:border-chat-user rounded-xl p-6 flex items-center justify-center gap-3 text-chat-user hover:bg-chat-user/5 transition-all duration-200"
-            >
-              <Plus className="w-5 h-5" />
-              <span className="font-medium">Hire a New Coach</span>
-            </button>
-          </motion.div>
+                      {/* Actions Menu */}
+                      <Popover
+                        open={openPopoverId === coach.id}
+                        onOpenChange={(open) =>
+                          setOpenPopoverId(open ? coach.id : null)
+                        }
+                      >
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="shrink-0 text-muted-foreground hover:text-foreground"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <MoreVertical className="w-5 h-5" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent
+                          align="end"
+                          className="w-48 p-2"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <button
+                            onClick={() => handleEditSettings(coach.id)}
+                            className="flex items-center gap-3 w-full px-3 py-2 text-sm text-foreground hover:bg-muted rounded-md transition-colors"
+                          >
+                            <Settings className="w-4 h-4" />
+                            Edit Settings
+                          </button>
+                          <button
+                            onClick={() => handleRetireCoach(coach)}
+                            className="flex items-center gap-3 w-full px-3 py-2 text-sm text-destructive hover:bg-destructive/10 rounded-md transition-colors"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                            Retire Coach
+                          </button>
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+                  </Card>
+                </motion.div>
+              ))}
+
+              {/* Create New Coach Card - Only show at bottom if list is not empty */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: coaches.length * 0.1 }}
+              >
+                <button
+                  onClick={() => navigate("/create")}
+                  className="w-full border-2 border-dashed border-chat-user/50 hover:border-chat-user rounded-xl p-6 flex items-center justify-center gap-3 text-chat-user hover:bg-chat-user/5 transition-all duration-200"
+                >
+                  <Plus className="w-5 h-5" />
+                  <span className="font-medium">Hire a New Coach</span>
+                </button>
+              </motion.div>
+            </>
+          )}
         </div>
       </main>
 
@@ -242,6 +331,42 @@ const CoachList = () => {
             </Button>
             <Button onClick={handleSignOut} className="bg-chat-user hover:bg-chat-user/90 text-chat-user-foreground">
               Sign Out
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Retire Coach Confirmation Dialog */}
+      <Dialog open={!!coachToDelete} onOpenChange={(open) => !open && setCoachToDelete(null)}>
+        <DialogContent className="w-[90%] sm:max-w-md rounded-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-center text-destructive">
+              <Trash2 className="w-8 h-8 mx-auto mb-2" />
+              Retire Coach?
+            </DialogTitle>
+            <DialogDescription className="text-center text-lg">
+              Are you sure you want to retire <strong>{coachToDelete?.name}</strong>?
+              <br />
+              <span className="text-sm text-muted-foreground mt-2 block">
+                This action cannot be undone.
+              </span>
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex gap-3 sm:justify-center">
+            <Button
+              variant="outline"
+              onClick={() => setCoachToDelete(null)}
+              disabled={isDeleting}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={confirmRetire}
+              variant="destructive"
+              className="bg-destructive hover:bg-destructive/90"
+              disabled={isDeleting}
+            >
+              {isDeleting ? "Retiring..." : "Yes, Retire Coach"}
             </Button>
           </DialogFooter>
         </DialogContent>

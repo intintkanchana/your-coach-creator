@@ -26,7 +26,8 @@ const fastify = Fastify({
 fastify.register(cors, { 
   // Allow all origins for simplicity in development, restrict in prod if needed
   origin: true,
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
 });
 
 // Register Swagger
