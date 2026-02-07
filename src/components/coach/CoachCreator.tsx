@@ -374,6 +374,16 @@ User Goal: ${config.goal}`;
           type: config.direction?.title,
           context: systemInstruction,
           icon: config.persona?.emoji || "🤖",
+          goal: config.goal,
+          bio: config.persona?.description,
+          trackings: config.vitalSigns
+            .filter(v => v.selected)
+            .map(v => ({
+              name: v.name,
+              description: v.description,
+              emoji: v.emoji,
+              type: v.type
+            }))
         }),
       });
 

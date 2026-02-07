@@ -25,7 +25,20 @@ export async function coachRoutes(fastify: FastifyInstance) {
               created_at: { type: 'string' },
               goal: { type: 'string' },
               bio: { type: 'string' },
-              vital_signs: { type: 'string' }
+              vital_signs: { type: 'string' },
+              trackings: { 
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    id: { type: 'number' },
+                    name: { type: 'string' },
+                    description: { type: 'string' },
+                    emoji: { type: 'string' },
+                    type: { type: 'string' }
+                  }
+                }
+              }
             }
           }
         }
@@ -62,7 +75,20 @@ export async function coachRoutes(fastify: FastifyInstance) {
             created_at: { type: 'string' },
             goal: { type: 'string' },
             bio: { type: 'string' },
-            vital_signs: { type: 'string' }
+            vital_signs: { type: 'string' },
+            trackings: { 
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  id: { type: 'number' },
+                  name: { type: 'string' },
+                  description: { type: 'string' },
+                  emoji: { type: 'string' },
+                  type: { type: 'string' }
+                }
+              }
+            }
           }
         },
         404: {
@@ -98,7 +124,21 @@ export async function coachRoutes(fastify: FastifyInstance) {
           name: { type: 'string' },
           type: { type: 'string' },
           context: { type: 'string' },
-          icon: { type: 'string' }
+          icon: { type: 'string' },
+          goal: { type: 'string' },
+          bio: { type: 'string' },
+          trackings: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                name: { type: 'string' },
+                description: { type: 'string' },
+                emoji: { type: 'string' },
+                type: { type: 'string' }
+              }
+            }
+          }
         },
         required: ['name', 'type']
       },
@@ -111,7 +151,22 @@ export async function coachRoutes(fastify: FastifyInstance) {
             type: { type: 'string' },
             system_instruction: { type: 'string' },
             icon: { type: 'string' },
-            user_id: { type: 'number' }
+            user_id: { type: 'number' },
+            goal: { type: 'string' },
+            bio: { type: 'string' },
+            trackings: { 
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  id: { type: 'number' },
+                  name: { type: 'string' },
+                  description: { type: 'string' },
+                  emoji: { type: 'string' },
+                  type: { type: 'string' }
+                }
+              }
+            }
           }
         },
         400: {
@@ -124,7 +179,15 @@ export async function coachRoutes(fastify: FastifyInstance) {
     }
   }, async (request, reply) => {
     const user = request.user!;
-    const { name, type, context, icon } = request.body as { name: string; type: string; context?: string; icon?: string }; // 'context' mapped to system_instruction
+    const { name, type, context, icon, goal, bio, trackings } = request.body as { 
+      name: string; 
+      type: string; 
+      context?: string; 
+      icon?: string;
+      goal?: string;
+      bio?: string;
+      trackings?: any[];
+    };
 
     if (!name || !type) {
       return reply.status(400).send({ error: 'Name and Type are required' });
@@ -135,7 +198,10 @@ export async function coachRoutes(fastify: FastifyInstance) {
       type,
       system_instruction: context,
       icon,
-      user_id: user.id
+      user_id: user.id,
+      goal,
+      bio,
+      trackings
     });
 
     return coach;

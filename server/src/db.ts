@@ -38,6 +38,16 @@ export function initDb() {
       FOREIGN KEY(coach_id) REFERENCES coaches(id),
       FOREIGN KEY(user_id) REFERENCES users(id)
     );
+
+    CREATE TABLE IF NOT EXISTS trackings (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      coach_id INTEGER NOT NULL,
+      name TEXT NOT NULL,
+      description TEXT,
+      emoji TEXT,
+      type TEXT,
+      FOREIGN KEY(coach_id) REFERENCES coaches(id)
+    );
   `);
 
   const safeAddColumn = (table: string, column: string, definition: string) => {

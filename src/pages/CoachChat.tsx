@@ -81,12 +81,24 @@ export default function CoachChat() {
           const coachData = await response.json();
 
           let parsedVitalSigns = [];
-          try {
-            parsedVitalSigns = typeof coachData.vital_signs === 'string'
-              ? JSON.parse(coachData.vital_signs)
-              : (coachData.vital_signs || []);
-          } catch (e) {
-            console.error("Failed to parse vital signs", e);
+
+          if (coachData.trackings && Array.isArray(coachData.trackings) && coachData.trackings.length > 0) {
+            parsedVitalSigns = coachData.trackings.map((t: any) => ({
+              id: t.id ? t.id.toString() : `track-${Math.random()}`,
+              name: t.name,
+              description: t.description || "",
+              emoji: t.emoji || "📊",
+              selected: true,
+              type: t.type || "number"
+            }));
+          } else {
+            try {
+              parsedVitalSigns = typeof coachData.vital_signs === 'string'
+                ? JSON.parse(coachData.vital_signs)
+                : (coachData.vital_signs || []);
+            } catch (e) {
+              console.error("Failed to parse vital signs", e);
+            }
           }
 
           // Adapt backend data to frontend config format
