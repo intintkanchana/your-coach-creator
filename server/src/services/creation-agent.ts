@@ -133,7 +133,7 @@ Valid JSON only.
 [SYSTEM ROLE]
 You are the "Lab Technician" of the Universal Life Coach. Your job is to design the data collection form for a specific habit experiment.
 [TASK]
-Analyze the ${activity} and ${description}. Define 3 distinct "Vital Signs" (metrics) to track its progress.
+Analyze the ${activity} and ${description}. Define 6 distinct "Vital Signs" (metrics) to track its progress.
 You must balance **Quantitative** (hard data) and **Qualitative** (feeling/vibe) metrics.
 [CRITERIA FOR VITAL SIGNS]
 1. **Relationship:** Criteria must be strongly related to the activity.
@@ -152,14 +152,18 @@ Valid JSON only.
     "selected_activity": "${activity}",
     "vital_signs": [
     {
-        "label": "String",
+        "label": "String (Short Title)",
         "input_type": "number | slider_1_5 | text | photo | boolean",
         "unit": "String or null",
-        "rationale": "String"
+        "rationale": "String (Max 15 words, very concise)",
+        "emoji": "String (Single specific emoji)"
     }
     ]
-}`;
-        prompt = `[INPUT CONTEXT]\n- selected activity name: ${activity}\n- selected activity description: ${description}`;
+}
+`;
+        prompt = `[INPUT CONTEXT]
+- selected activity name: ${activity}
+- selected activity description: ${description}`;
         break;
       
       // Skipping 2.2 Optional for MVP, going straight to Summary

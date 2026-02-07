@@ -25,6 +25,7 @@ export function CoachCreator() {
   const [isLoading, setIsLoading] = useState(false);
   const [directions, setDirections] = useState<CoachDirection[]>([]);
   const [personas, setPersonas] = useState<CoachPersona[]>([]);
+  const [suggestedVitals, setSuggestedVitals] = useState<VitalSign[]>([]);
   const { toast } = useToast();
 
   // Scroll to top when step changes
@@ -146,10 +147,75 @@ export function CoachCreator() {
     }
   }, [toast]);
 
-  const handlePersonaSelect = useCallback((persona: CoachPersona) => {
-    setConfig((prev) => ({ ...prev, persona }));
-    setStep("select-vitals");
-  }, []);
+  const handlePersonaSelect = useCallback(async (persona: CoachPersona) => {
+    setIsLoading(true);
+    try {
+      const token = localStorage.getItem("sessionToken");
+      if (!token) throw new Error("No session token found");
+
+      // 1. Advance step to save persona
+      await fetch(`${API_URL}/coach/create/advance`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": token,
+        },
+        body: JSON.stringify({
+          nextStep: "2.1_SUGGEST_VITAL_SIGNS",
+          data: {
+            coach_name: persona.name,
+            coach_bio: persona.description,
+            selected_personality: persona.name // Using name as proxy for personality vibe for now
+          }
+        }),
+      });
+
+      setConfig((prev) => ({ ...prev, persona }));
+
+      // 2. Generate Vital Signs
+      const response = await fetch(`${API_URL}/coach/create/chat`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": token,
+        },
+        body: JSON.stringify({
+          message: {
+            selected_activity_description: config.direction?.description
+          }
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to generate vital signs");
+      }
+
+      const data = await response.json();
+
+      // Backend returns: { ui_data: { selected_activity, vital_signs: [{label, input_type, unit, rationale}] } }
+      const generatedVitals = data.ui_data.vital_signs.map((v: any, index: number) => ({
+        id: `vital-${index}`,
+        name: v.label,
+        description: v.rationale,
+        emoji: v.emoji || "📊",
+        type: v.input_type === 'slider_1_5' ? 'slider' : v.input_type,
+        selected: false, // Default to unselected, user must pick
+      }));
+
+      setSuggestedVitals(generatedVitals);
+      setStep("select-vitals");
+
+    } catch (error) {
+      console.error("Error generating vitals:", error);
+      toast({
+        title: "Error",
+        description: "Failed to generate tracker options. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }, [config.direction, toast]);
 
   const handleVitalsSelect = useCallback((vitalSigns: VitalSign[]) => {
     setConfig((prev) => ({ ...prev, vitalSigns }));
@@ -209,6 +275,8 @@ export function CoachCreator() {
           {step === "select-vitals" && (
             <VitalsSelectStep
               key="vitals"
+              suggestedVitals={suggestedVitals}
+              isLoading={isLoading}
               onSelect={handleVitalsSelect}
               onBack={() => setStep("select-persona")} // Back to persona select
             />

@@ -129,22 +129,24 @@ export function PersonaSelectStep({ personas, isLoading, onSelect, onBack }: Per
         )}
       </AnimatePresence>
 
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: selected ? 1 : 0.5 }}
-        transition={{ delay: 0.6 }}
-        className="flex justify-center pt-8"
-      >
-        <Button
-          onClick={handleContinue}
-          disabled={!selected}
-          size="lg"
-          className="px-8 py-6 text-lg rounded-2xl"
+      {!isLoading && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: selected ? 1 : 0.5 }}
+          transition={{ delay: 0.6 }}
+          className="flex justify-center pt-8"
         >
-          Continue
-          <ArrowRight className="ml-2 h-5 w-5" />
-        </Button>
-      </motion.div>
+          <Button
+            onClick={handleContinue}
+            disabled={!selected}
+            size="lg"
+            className="px-8 py-6 text-lg rounded-2xl"
+          >
+            Continue
+            <ArrowRight className="ml-2 h-5 w-5" />
+          </Button>
+        </motion.div>
+      )}
     </motion.div>
   );
 }
