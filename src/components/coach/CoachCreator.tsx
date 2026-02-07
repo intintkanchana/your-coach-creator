@@ -273,6 +273,54 @@ export function CoachCreator() {
     }
   }, [config.goal, toast]);
 
+  const handleGenerateCustomVitals = useCallback(async (customGoal: string): Promise<VitalSign[]> => {
+    try {
+      const token = localStorage.getItem("sessionToken");
+      if (!token) throw new Error("No session token found");
+
+      const response = await fetch(`${API_URL}/coach/create/chat`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": token,
+        },
+        body: JSON.stringify({
+          message: {
+            selected_activity_description: customGoal,
+            limit: 2
+          }
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to generate custom vitals");
+      }
+
+      const data = await response.json();
+
+      // Backend returns: { ui_data: { selected_activity, vital_signs: [{label, input_type, unit, rationale}] } }
+      const generatedVitals = data.ui_data.vital_signs.map((v: any, index: number) => ({
+        id: `custom-vital-${Date.now()}-${index}`,
+        name: v.label,
+        description: v.rationale,
+        emoji: v.emoji || "✨",
+        type: v.input_type === 'slider_1_5' ? 'slider' : v.input_type,
+        selected: false, // Don't auto-select custom ones as per user request
+      }));
+
+      return generatedVitals;
+
+    } catch (error) {
+      console.error("Error generating custom vitals:", error);
+      toast({
+        title: "Error",
+        description: "Failed to generate custom tracker options. Please try again.",
+        variant: "destructive",
+      });
+      return [];
+    }
+  }, [toast]);
+
   const handleCreateCoach = useCallback(async () => {
     setIsLoading(true);
     try {
@@ -407,6 +455,9 @@ User Goal: ${config.goal}`;
               isLoading={isLoading}
               onSelect={handleVitalsSelect}
               onBack={() => setStep("select-persona")} // Back to persona select
+              onGenerateCustomVitals={handleGenerateCustomVitals}
+              direction={config.direction}
+              persona={config.persona}
             />
           )}
 

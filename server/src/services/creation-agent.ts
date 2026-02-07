@@ -131,12 +131,13 @@ Valid JSON only.
         // Mock description or retrieve if we saved it. 
         // To be safe, let's assume the user selection payload might include description if the frontend passed it back.
         const description = userMessage.selected_activity_description || "A custom activity";
+        const limit = userMessage.limit || 6;
 
         systemRole = `
 [SYSTEM ROLE]
 You are the "Lab Technician" of the Universal Life Coach. Your job is to design the data collection form for a specific habit experiment.
 [TASK]
-Analyze the ${activity} and ${description}. Define 6 distinct "Vital Signs" (metrics) to track its progress.
+Analyze the ${activity} and ${description}. Define ${limit} distinct "Vital Signs" (metrics) to track its progress.
 You must balance **Quantitative** (hard data) and **Qualitative** (feeling/vibe) metrics.
 [CRITERIA FOR VITAL SIGNS]
 1. **Relationship:** Criteria must be strongly related to the activity.

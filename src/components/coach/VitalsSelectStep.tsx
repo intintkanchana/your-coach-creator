@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { VitalSign, VitalSignType } from "@/types/coach";
+import { VitalSign, VitalSignType, CoachDirection, CoachPersona } from "@/types/coach";
 import { defaultVitalSigns } from "@/data/coachOptions";
 import { Check, ArrowRight, Eye, Loader2, Plus, ChevronDown, ChevronLeft } from "lucide-react";
 
@@ -12,9 +12,12 @@ interface VitalsSelectStepProps {
   isLoading: boolean;
   onSelect: (vitals: VitalSign[]) => void;
   onBack: () => void;
+  onGenerateCustomVitals: (customGoal: string) => Promise<VitalSign[]>;
+  direction: CoachDirection | null;
+  persona: CoachPersona | null;
 }
 
-export function VitalsSelectStep({ suggestedVitals, isLoading, onSelect, onBack }: VitalsSelectStepProps) {
+export function VitalsSelectStep({ suggestedVitals, isLoading, onSelect, onBack, onGenerateCustomVitals, direction, persona }: VitalsSelectStepProps) {
   const [vitals, setVitals] = useState<VitalSign[]>([]);
   const [customGoal, setCustomGoal] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
@@ -55,25 +58,22 @@ export function VitalsSelectStep({ suggestedVitals, isLoading, onSelect, onBack 
     }
   };
 
-  const handleGenerateCustomVital = () => {
-    setIsGenerating(true);
-    // Mock API simulation
-    setTimeout(() => {
-      const newVital: VitalSign = {
-        id: `custom-${Date.now()}`,
-        name: customGoal ? "Custom Tracker" : "General Tracker",
-        description: customGoal
-          ? `Tracking progress specifically for: ${customGoal}`
-          : "A custom metric tailored to your specific needs.",
-        emoji: "✨",
-        selected: true,
-        type: "text",
-      };
+  const handleGenerateCustomVital = async () => {
+    if (!customGoal.trim()) return;
 
-      setVitals(prev => [...prev, newVital]);
-      setCustomGoal("");
+    setIsGenerating(true);
+    try {
+      const newVitals = await onGenerateCustomVitals(customGoal);
+      if (newVitals && newVitals.length > 0) {
+        setVitals(prev => [...prev, ...newVitals]);
+        setCustomGoal("");
+        setIsCustomOpen(false); // Close the accordion on success
+      }
+    } catch (error) {
+      console.error("Failed to generate custom vital", error);
+    } finally {
       setIsGenerating(false);
-    }, 1500);
+    }
   };
 
   const handleContinue = () => {
@@ -247,7 +247,11 @@ export function VitalsSelectStep({ suggestedVitals, isLoading, onSelect, onBack 
                 Describe what you want to track, and we'll suggest a metric.
               </p>
               <Textarea
-                placeholder="E.g., I want to track how many pages I read each day..."
+                placeholder={
+                  direction
+                    ? `E.g., I want ${persona ? persona.name : 'my coach'} to track...`
+                    : "E.g., I want to track how many pages I read each day..."
+                }
                 value={customGoal}
                 onChange={(e) => setCustomGoal(e.target.value)}
                 className="bg-card resize-none min-h-[80px]"
