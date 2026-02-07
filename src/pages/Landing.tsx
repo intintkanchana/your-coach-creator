@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -7,24 +7,30 @@ import { useGoogleLogin } from "@react-oauth/google";
 
 const Landing = () => {
   const navigate = useNavigate();
-  const { login } = useAuth();
-  const [isLoading, setIsLoading] = useState(false);
+  const { login, user, isLoading: isAuthLoading } = useAuth();
+  const [isLoginLoading, setIsLoginLoading] = useState(false);
+
+  useEffect(() => {
+    if (!isAuthLoading && user) {
+      navigate("/coaches");
+    }
+  }, [user, isAuthLoading, navigate]);
 
   const googleLogin = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
       try {
-        setIsLoading(true);
+        setIsLoginLoading(true);
         // tokenResponse has access_token
         await login(tokenResponse.access_token);
       } catch (e) {
         console.error("Login failed", e);
       } finally {
-        setIsLoading(false);
+        setIsLoginLoading(false);
       }
     },
     onError: () => {
       console.error("Login Failed");
-      setIsLoading(false);
+      setIsLoginLoading(false);
     }
   });
 
@@ -69,11 +75,11 @@ const Landing = () => {
         >
           <Button
             onClick={handleLoginClick}
-            disabled={isLoading}
+            disabled={isLoginLoading}
             className="bg-card text-foreground border border-border shadow-soft hover:shadow-md transition-all duration-200 px-6 py-6 text-base font-medium rounded-xl flex items-center gap-3 cursor-pointer"
             variant="outline"
           >
-            {isLoading ? (
+            {isLoginLoading ? (
               <motion.div
                 className="w-5 h-5 border-2 border-muted-foreground border-t-transparent rounded-full"
                 animate={{ rotate: 360 }}
@@ -99,7 +105,7 @@ const Landing = () => {
                 />
               </svg>
             )}
-            {isLoading ? "Signing in..." : "Continue with Google"}
+            {isLoginLoading ? "Signing in..." : "Continue with Google"}
           </Button>
         </motion.div>
       </div>

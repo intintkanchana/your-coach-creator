@@ -8,7 +8,10 @@ import { DirectionSelectStep } from "./DirectionSelectStep";
 import { PersonaSelectStep } from "./PersonaSelectStep";
 import { VitalsSelectStep } from "./VitalsSelectStep";
 import { SummaryStep } from "./SummaryStep";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/lib/auth-context";
 import { useToast } from "@/components/ui/use-toast";
+
 
 const initialConfig: CoachConfig = {
   goal: "",
@@ -27,6 +30,16 @@ export function CoachCreator() {
   const [personas, setPersonas] = useState<CoachPersona[]>([]);
   const [suggestedVitals, setSuggestedVitals] = useState<VitalSign[]>([]);
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const { user, isLoading: isAuthLoading } = useAuth();
+
+  // Redirect if not authenticated
+  useEffect(() => {
+    if (!isAuthLoading && !user) {
+      navigate("/");
+    }
+  }, [user, isAuthLoading, navigate]);
+
 
   // Scroll to top when step changes
   useEffect(() => {
@@ -247,10 +260,7 @@ export function CoachCreator() {
 
       setConfig((prev) => ({ ...prev, vitalSigns }));
       setStep("summary");
-
-      // Note: We don't set isLoading(false) here because we want to transition 
-      // immediately to the summary step which will trigger finalize 
-      // (and show loading state there)
+      setIsLoading(false);
 
     } catch (error) {
       console.error("Error saving vitals:", error);
@@ -263,55 +273,86 @@ export function CoachCreator() {
     }
   }, [config.goal, toast]);
 
-  // Effect to trigger finalization when reaching summary step
-  useEffect(() => {
-    if (step === "summary") {
-      const finalizeCoach = async () => {
-        setIsLoading(true);
-        try {
-          const token = localStorage.getItem("sessionToken");
-          if (!token) throw new Error("No session token found");
+  const handleCreateCoach = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const token = localStorage.getItem("sessionToken");
+      if (!token) throw new Error("No session token found");
 
-          const response = await fetch(`${API_URL}/coach/create/finalize`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": token,
-            },
-            body: JSON.stringify({}),
-          });
+      // Construct system instruction from config
+      const systemInstruction = `You are ${config.persona?.name}, a ${config.direction?.title} coach. 
+Bio: ${config.persona?.description}.
+Your goal is to help the user track: ${config.vitalSigns?.filter(v => v.selected).map(v => v.name).join(', ') || 'their progress'}.
+User Goal: ${config.goal}`;
 
-          if (!response.ok) {
-            throw new Error("Failed to finalize coach");
-          }
+      // 1. Create the coach
+      const response = await fetch(`${API_URL}/coaches`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": token,
+        },
+        body: JSON.stringify({
+          name: config.persona?.name,
+          type: config.direction?.title,
+          context: systemInstruction,
+        }),
+      });
 
-          const data = await response.json();
-          // data.coach contains the final saved coach
-          console.log("Coach created:", data.coach);
+      if (!response.ok) {
+        throw new Error("Failed to create coach");
+      }
 
-          // Here we could update the config with any returned data-sanitization from server
-          // e.g. setConfig(prev => ({ ...prev, ...data.coach }))
+      const data = await response.json();
+      console.log("Coach created:", data);
 
-        } catch (error) {
-          console.error("Error finalizing coach:", error);
-          toast({
-            title: "Error",
-            description: "Failed to create coach. Please try again.",
-            variant: "destructive",
-          });
-        } finally {
-          setIsLoading(false);
-        }
-      };
+      // 2. Clear the creation session
+      await fetch(`${API_URL}/coach/create/chat`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": token,
+        },
+        body: JSON.stringify({ message: "", reset: true }),
+      });
 
-      finalizeCoach();
+      // 3. Navigate to chat with the new coach
+      // Assuming we can pass the new coach ID or object to the chat route
+      // For now, using the same pattern as before, but with the created coach data
+      // You might need to adjust the navigation target based on your app's routing
+      window.location.href = `/chat/${data.id}`; // Force navigation or use router if available in parent context but this is inside component so lets use what we have available or triggers
+      // Since we are inside the component, we can use the prop or state to trigger navigation,
+      // BUT wait, SummaryStep uses useNavigate.
+      // We should probably letting SummaryStep handle navigation OR passing a callback that handles it.
+      // The original code passed `onStartOver`.
+      // Let's passed a success callback to SummaryStep implicitly by successfully resolving this promise?
+      // Actually SummaryStep calls `navigate("/chat", ...)` internally in `handleComplete`.
+      // We should return the created coach or let SummaryStep handle the navigation.
+      // Let's return the created coach data so SummaryStep can use it if needed, or just let it start fresh.
+
+      return data;
+
+    } catch (error) {
+      console.error("Error finalizing coach:", error);
+      toast({
+        title: "Error",
+        description: "Failed to create coach. Please try again.",
+        variant: "destructive",
+      });
+      throw error; // Re-throw to let caller know it failed
+    } finally {
+      setIsLoading(false);
     }
-  }, [step, toast]);
+  }, [config, toast]);
 
   const handleStartOver = useCallback(() => {
-    setConfig(initialConfig);
     setStep("welcome");
+    setConfig(initialConfig);
   }, []);
+
+  if (isAuthLoading) {
+    return <div className="min-h-screen flex items-center justify-center bg-background">Loading...</div>;
+  }
 
   return (
     <div className="min-h-screen coach-gradient">
@@ -374,6 +415,7 @@ export function CoachCreator() {
               config={config}
               isLoading={isLoading}
               onStartOver={handleStartOver}
+              onCreate={handleCreateCoach}
             />
           )}
         </AnimatePresence>

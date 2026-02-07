@@ -8,14 +8,22 @@ interface SummaryStepProps {
   config: CoachConfig;
   isLoading?: boolean;
   onStartOver: () => void;
+  onCreate: () => Promise<any>;
 }
 
-export function SummaryStep({ config, isLoading = false, onStartOver }: SummaryStepProps) {
+export function SummaryStep({ config, isLoading = false, onStartOver, onCreate }: SummaryStepProps) {
   const navigate = useNavigate();
   const selectedVitals = config.vitalSigns.filter((v) => v.selected);
 
-  const handleComplete = () => {
-    navigate("/chat", { state: { config } });
+  const handleComplete = async () => {
+    try {
+      const coach = await onCreate();
+      // Navigate to chat, passing new coach context if needed
+      // Or just go to chat listing
+      navigate("/chat", { state: { config, coachId: coach.id } });
+    } catch (e) {
+      // Error handled in parent
+    }
   };
 
   const getCoachBio = (id: string) => {
