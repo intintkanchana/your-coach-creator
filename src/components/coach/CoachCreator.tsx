@@ -408,7 +408,8 @@ User Goal: ${config.goal}`;
       // Assuming we can pass the new coach ID or object to the chat route
       // For now, using the same pattern as before, but with the created coach data
       // You might need to adjust the navigation target based on your app's routing
-      window.location.href = `/chat/${data.id}`; // Force navigation or use router if available in parent context but this is inside component so lets use what we have available or triggers
+      // 3. Navigation handled by SummaryStep
+      // window.location.href = `/chat/${data.id}`;
       // Since we are inside the component, we can use the prop or state to trigger navigation,
       // BUT wait, SummaryStep uses useNavigate.
       // We should probably letting SummaryStep handle navigation OR passing a callback that handles it.

@@ -20,28 +20,13 @@ export function SummaryStep({ config, isLoading = false, onStartOver, onCreate }
       const coach = await onCreate();
       // Navigate to chat, passing new coach context if needed
       // Or just go to chat listing
-      navigate("/chat", { state: { config, coachId: coach.id } });
+      navigate(`/chat/${coach.id}`, { state: { config, coachId: coach.id } });
     } catch (e) {
       // Error handled in parent
     }
   };
 
-  const getCoachBio = (id: string) => {
-    switch (id) {
-      case "gentle-guide":
-        return "I'm like a warm cup of tea for your soul, but with spreadsheets! I promise to never say 'try harder' when you need a nap. Let's bloom at your own pace—no fertilizers needed!";
-      case "cheerleader":
-        return "I brought pom-poms! Virtual ones, but they're huge! I will celebrate everything, even if you just put on socks today. YOU GOT THIS! Ready to turn your life into a highlight reel?";
-      case "wise-mentor":
-        return "I've seen it all (mostly). I offer wisdom, perspective, and the occasional cryptic metaphor that will make total sense at 3 AM. Let's unlock your potential, one riddle at a time.";
-      case "adventure-buddy":
-        return "Pack your bags—metaphorically! We’re going on a quest for greatness. I have a map, a compass, and zero sense of direction, but we’ll find the treasure anyway. Adventure awaits!";
-      case "calm-anchor":
-        return "I'm the meditative breath you forgot to take. When the world spins, I stay put. Think of me as a human paperweight for your flying thoughts. Let's find your center.";
-      default:
-        return "I'm your personal coach, ready to help you annoy your friends with how much progress you're making!";
-    }
-  };
+
 
   return (
     <motion.div
@@ -137,7 +122,7 @@ export function SummaryStep({ config, isLoading = false, onStartOver, onCreate }
               </h3>
 
               <p className="text-muted-foreground italic max-w-sm mx-auto leading-relaxed">
-                "{getCoachBio(config.persona.id)}"
+                "{config.persona.description}"
               </p>
             </motion.div>
           )}

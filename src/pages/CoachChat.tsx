@@ -93,9 +93,9 @@ export default function CoachChat() {
             }));
           } else {
             try {
-              parsedVitalSigns = typeof coachData.vital_signs === 'string'
+              parsedVitalSigns = (typeof coachData.vital_signs === 'string' && coachData.vital_signs.trim() !== '')
                 ? JSON.parse(coachData.vital_signs)
-                : (coachData.vital_signs || []);
+                : (Array.isArray(coachData.vital_signs) ? coachData.vital_signs : []);
             } catch (e) {
               console.error("Failed to parse vital signs", e);
             }
