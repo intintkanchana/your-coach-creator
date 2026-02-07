@@ -1,20 +1,22 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { CoachPersona } from "@/types/coach";
 import { coachPersonas } from "@/data/coachOptions";
 import { Check, ArrowRight, ChevronLeft } from "lucide-react";
 
 interface PersonaSelectStepProps {
+  personas: CoachPersona[];
+  isLoading: boolean;
   onSelect: (persona: CoachPersona) => void;
   onBack: () => void;
 }
 
-export function PersonaSelectStep({ onSelect, onBack }: PersonaSelectStepProps) {
+export function PersonaSelectStep({ personas, isLoading, onSelect, onBack }: PersonaSelectStepProps) {
   const [selected, setSelected] = useState<string | null>(null);
 
   const handleContinue = () => {
-    const persona = coachPersonas.find((p) => p.id === selected);
+    const persona = personas.find((p) => p.id === selected);
     if (persona) {
       onSelect(persona);
     }
@@ -64,44 +66,68 @@ export function PersonaSelectStep({ onSelect, onBack }: PersonaSelectStepProps) 
         You can always change this later!
       </motion.p>
 
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.4 }}
-        className="w-full grid md:grid-cols-2 gap-3"
-      >
-        {coachPersonas.map((persona, i) => (
-          <motion.button
-            key={persona.id}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 + i * 0.1 }}
-            onClick={() => setSelected(persona.id)}
-            className={`
-              relative flex items-start gap-4 p-5 rounded-2xl border-2 text-left transition-all duration-300
-              ${selected === persona.id
-                ? "border-primary bg-primary/5 shadow-glow"
-                : "border-border bg-card hover:border-primary/30 hover:shadow-soft"
-              }
-            `}
+      <AnimatePresence mode="wait">
+        {isLoading ? (
+          <motion.div
+            key="loading"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="flex flex-col items-center py-12"
           >
-            <span className="text-3xl flex-shrink-0">{persona.emoji}</span>
-            <div className="flex-1">
-              <h3 className="font-semibold text-foreground mb-1">{persona.name}</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">{persona.description}</p>
-            </div>
-            {selected === persona.id && (
+            <div className="relative">
+              <div className="h-16 w-16 rounded-full bg-primary/10 animate-pulse-soft" />
               <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                className="absolute top-4 right-4 h-6 w-6 rounded-full bg-primary flex items-center justify-center"
+                className="absolute inset-0 flex items-center justify-center"
+                animate={{ rotate: 360 }}
+                transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
               >
-                <Check className="h-4 w-4 text-primary-foreground" />
+                <span className="text-2xl">✨</span>
               </motion.div>
-            )}
-          </motion.button>
-        ))}
-      </motion.div>
+            </div>
+            <p className="mt-4 text-muted-foreground">Crafting personality options...</p>
+          </motion.div>
+        ) : (
+          <motion.div
+            key="content"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="w-full grid md:grid-cols-2 gap-3"
+          >
+            {personas.map((persona, i) => (
+              <motion.button
+                key={persona.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 + i * 0.1 }}
+                onClick={() => setSelected(persona.id)}
+                className={`
+                  relative flex items-start gap-4 p-5 rounded-2xl border-2 text-left transition-all duration-300
+                  ${selected === persona.id
+                    ? "border-primary bg-primary/5 shadow-glow"
+                    : "border-border bg-card hover:border-primary/30 hover:shadow-soft"
+                  }
+                `}
+              >
+                <span className="text-3xl flex-shrink-0">{persona.emoji}</span>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-foreground mb-1">{persona.name}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{persona.description}</p>
+                </div>
+                {selected === persona.id && (
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    className="absolute top-4 right-4 h-6 w-6 rounded-full bg-primary flex items-center justify-center"
+                  >
+                    <Check className="h-4 w-4 text-primary-foreground" />
+                  </motion.div>
+                )}
+              </motion.button>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <motion.div
         initial={{ opacity: 0 }}

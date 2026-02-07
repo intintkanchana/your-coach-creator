@@ -24,6 +24,7 @@ export function CoachCreator() {
   const [config, setConfig] = useState<CoachConfig>(initialConfig);
   const [isLoading, setIsLoading] = useState(false);
   const [directions, setDirections] = useState<CoachDirection[]>([]);
+  const [personas, setPersonas] = useState<CoachPersona[]>([]);
   const { toast } = useToast();
 
   // Scroll to top when step changes
@@ -86,11 +87,64 @@ export function CoachCreator() {
   }, [handleGoalSubmit, config.goal]);
 
   const handleDirectionSelect = useCallback(async (direction: CoachDirection) => {
-    setConfig((prev) => ({ ...prev, direction }));
-    // Here we would ideally fetch the next step (personas)
-    // For now, just advance UI
-    setStep("select-persona");
-  }, []);
+    setIsLoading(true);
+    try {
+      const token = localStorage.getItem("sessionToken");
+      if (!token) throw new Error("No session token found");
+
+      // 1. Advance step to save direction
+      await fetch(`${API_URL}/coach/create/advance`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": token,
+        },
+        body: JSON.stringify({
+          nextStep: "1.2_CREATE_PERSONA",
+          data: { selected_activity_name: direction.title }
+        }),
+      });
+
+      setConfig((prev) => ({ ...prev, direction }));
+
+      // 2. Generate Personas
+      const response = await fetch(`${API_URL}/coach/create/chat`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": token,
+        },
+        body: JSON.stringify({ message: { selected_activity_name: direction.title } }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to generate personas");
+      }
+
+      const data = await response.json();
+
+      // Backend returns: { ui_data: { coach_name, coach_bio, personality_options: [{name, description, emoji}] } }
+      const generatedPersonas = data.ui_data.personality_options.map((opt: any, index: number) => ({
+        id: `persona-${index}`,
+        name: opt.name,
+        description: opt.description,
+        emoji: opt.emoji || "🙂",
+      }));
+
+      setPersonas(generatedPersonas);
+      setStep("select-persona");
+
+    } catch (error) {
+      console.error("Error generating personas:", error);
+      toast({
+        title: "Error",
+        description: "Failed to generate personality options. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }, [toast]);
 
   const handlePersonaSelect = useCallback((persona: CoachPersona) => {
     setConfig((prev) => ({ ...prev, persona }));
@@ -145,6 +199,8 @@ export function CoachCreator() {
           {step === "select-persona" && (
             <PersonaSelectStep
               key="persona"
+              personas={personas}
+              isLoading={isLoading}
               onSelect={handlePersonaSelect}
               onBack={() => setStep("select-direction")} // Back to direction select
             />

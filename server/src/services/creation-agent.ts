@@ -97,13 +97,19 @@ Create a specific Coach Persona for the activity: ${activityName}.
 [OUTPUT REQUIREMENTS]
 1. **Coach Name:** Creative, fun and easily-understandable.
 2. **Coach Bio:** <75 words. Funny, warm, "Tracer Bullet" philosophy.
-3. **Personality Options:** 5 adjectives/vibes for the user to tweak the coach's voice.
+3. **Personality Options:** 4 distinct options for the user to tweak the coach's voice.
 [OUTPUT FORMAT]
 Valid JSON only.
 {
     "coach_name": "String",
     "coach_bio": "String",
-    "personality_options": ["String", "String", "String", "String", "String"]
+    "personality_options": [
+        {
+            "name": "String (Title of the vibe)",
+            "description": "String (1-2 sentences explaining what this feels like)",
+            "emoji": "String (Single emoji char)"
+        }
+    ]
 }`;
         prompt = `[INPUT CONTEXT]\n- selected activity name: ${activityName}`;
         break;
