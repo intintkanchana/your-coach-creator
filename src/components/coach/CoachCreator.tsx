@@ -56,6 +56,7 @@ export function CoachCreator() {
     // Avoid re-fetching if we already have them
     if (inspirationGoals.length > 0) return;
 
+    setIsInspirationsLoading(true);
     try {
       const token = localStorage.getItem("sessionToken");
       if (!token) return;
@@ -76,6 +77,8 @@ export function CoachCreator() {
     } catch (error) {
       console.error("Failed to fetch inspirations", error);
       // Silently fail, fallback to defaults
+    } finally {
+      setIsInspirationsLoading(false);
     }
   }, [inspirationGoals.length]);
 

@@ -255,6 +255,8 @@ Generate 4 distinct goal inspirations for a user who wants to build a new habit 
 4. Finance/Money
 [OUTPUT FORMAT]
 Return a JSON array of strings. Each string should be a first-person statement (e.g., "I want to...").
+IMPORTANT: Keep each goal concise (maximum 2 sentences, under 20 words) to ensure it fits within 3 lines in the UI.
+
 Example:
 [
   "I want to feel more confident in my leadership skills",

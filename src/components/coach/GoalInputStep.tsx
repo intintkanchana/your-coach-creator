@@ -2,7 +2,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowRight, Lightbulb, ChevronLeft } from "lucide-react";
+import { ArrowRight, Lightbulb, ChevronLeft, Sparkles } from "lucide-react";
 
 interface GoalInputStepProps {
   onSubmit: (goal: string) => void;
@@ -108,16 +108,25 @@ export function GoalInputStep({ onSubmit, onBack, isLoading = false, inspiration
                 <Lightbulb className="h-4 w-4" />
                 <span>Need inspiration?</span>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {areInspirationsLoading ? (
-                  Array.from({ length: 4 }).map((_, i) => (
-                    <div
-                      key={i}
-                      className="h-10 rounded-xl bg-secondary/50 animate-pulse"
-                    />
-                  ))
-                ) : (
-                  prompts.map((prompt, i) => (
+              {areInspirationsLoading ? (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="flex flex-col items-center justify-center min-h-[100px] w-full bg-secondary/10 rounded-xl border border-dashed border-secondary/50 gap-3 py-4"
+                >
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                  >
+                    <Sparkles className="h-5 w-5 text-primary" />
+                  </motion.div>
+                  <p className="text-sm text-muted-foreground animate-pulse">
+                    Finding some great inspirations for you...
+                  </p>
+                </motion.div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {prompts.map((prompt, i) => (
                     <motion.button
                       key={prompt}
                       initial={{ opacity: 0, scale: 0.9 }}
@@ -128,9 +137,9 @@ export function GoalInputStep({ onSubmit, onBack, isLoading = false, inspiration
                     >
                       {prompt}
                     </motion.button>
-                  ))
-                )}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             <motion.div
