@@ -222,10 +222,91 @@ export function CoachCreator() {
     }
   }, [config.direction, toast]);
 
-  const handleVitalsSelect = useCallback((vitalSigns: VitalSign[]) => {
-    setConfig((prev) => ({ ...prev, vitalSigns }));
-    setStep("summary");
-  }, []);
+  const handleVitalsSelect = useCallback(async (vitalSigns: VitalSign[]) => {
+    setIsLoading(true);
+    try {
+      const token = localStorage.getItem("sessionToken");
+      if (!token) throw new Error("No session token found");
+
+      // 1. Advance step to save vitals
+      await fetch(`${API_URL}/coach/create/advance`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": token,
+        },
+        body: JSON.stringify({
+          nextStep: "3.0_SUMMARIZE_COACH",
+          data: {
+            vital_signs: vitalSigns,
+            // Also explicitly save the user goal if not already in session from previous steps roughly
+            user_goal: config.goal
+          }
+        }),
+      });
+
+      setConfig((prev) => ({ ...prev, vitalSigns }));
+      setStep("summary");
+
+      // Note: We don't set isLoading(false) here because we want to transition 
+      // immediately to the summary step which will trigger finalize 
+      // (and show loading state there)
+
+    } catch (error) {
+      console.error("Error saving vitals:", error);
+      toast({
+        title: "Error",
+        description: "Failed to save tracking options. Please try again.",
+        variant: "destructive",
+      });
+      setIsLoading(false);
+    }
+  }, [config.goal, toast]);
+
+  // Effect to trigger finalization when reaching summary step
+  useEffect(() => {
+    if (step === "summary") {
+      const finalizeCoach = async () => {
+        setIsLoading(true);
+        try {
+          const token = localStorage.getItem("sessionToken");
+          if (!token) throw new Error("No session token found");
+
+          const response = await fetch(`${API_URL}/coach/create/finalize`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": token,
+            },
+            body: JSON.stringify({}),
+          });
+
+          if (!response.ok) {
+            throw new Error("Failed to finalize coach");
+          }
+
+          const data = await response.json();
+          // data.coach contains the final saved coach
+          console.log("Coach created:", data.coach);
+
+          // Here we could update the config with any returned data-sanitization from server
+          // e.g. setConfig(prev => ({ ...prev, ...data.coach }))
+
+        } catch (error) {
+          console.error("Error finalizing coach:", error);
+          toast({
+            title: "Error",
+            description: "Failed to create coach. Please try again.",
+            variant: "destructive",
+          });
+        } finally {
+          setIsLoading(false);
+        }
+      };
+
+      finalizeCoach();
+    }
+  }, [step, toast]);
 
   const handleStartOver = useCallback(() => {
     setConfig(initialConfig);
@@ -291,6 +372,7 @@ export function CoachCreator() {
             <SummaryStep
               key="summary"
               config={config}
+              isLoading={isLoading}
               onStartOver={handleStartOver}
             />
           )}
