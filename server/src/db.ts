@@ -19,6 +19,7 @@ export function initDb() {
       name TEXT NOT NULL,
       type TEXT NOT NULL,
       system_instruction TEXT NOT NULL,
+      icon TEXT,
       user_id INTEGER NOT NULL,
       FOREIGN KEY(user_id) REFERENCES users(id)
     );
@@ -34,6 +35,12 @@ export function initDb() {
       FOREIGN KEY(user_id) REFERENCES users(id)
     );
   `);
+
+  try {
+    db.exec(`ALTER TABLE coaches ADD COLUMN icon TEXT;`);
+  } catch (e) {
+    // Column likely already exists
+  }
 }
 
 export default db;

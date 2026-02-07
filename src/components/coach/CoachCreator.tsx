@@ -296,6 +296,7 @@ User Goal: ${config.goal}`;
           name: config.persona?.name,
           type: config.direction?.title,
           context: systemInstruction,
+          icon: config.persona?.emoji || "🤖",
         }),
       });
 

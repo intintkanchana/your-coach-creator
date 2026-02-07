@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { LogOut, MoreVertical, Settings, Trash2, Plus } from "lucide-react";
@@ -29,29 +29,64 @@ interface Coach {
   lastActive: string;
 }
 
-const mockCoaches: Coach[] = [
-  {
-    id: "1",
-    name: "Limber Lenny",
-    emoji: "🧘‍♂️",
-    project: "Front Split Project",
-    lastActive: "Today",
-  },
-  {
-    id: "2",
-    name: "Hydration Homie",
-    emoji: "💧",
-    project: "Drink Water Project",
-    lastActive: "Yesterday",
-  },
-];
+const getEmojiForType = (type: string) => {
+  const t = type.toLowerCase();
+  if (t.includes("run")) return "🏃";
+  if (t.includes("read") || t.includes("book")) return "📚";
+  if (t.includes("water") || t.includes("drink")) return "💧";
+  if (t.includes("yoga") || t.includes("flex")) return "🧘‍♂️";
+  if (t.includes("gym") || t.includes("lift")) return "💪";
+  if (t.includes("sleep")) return "😴";
+  if (t.includes("meditat")) return "🧘";
+  return "🤖";
+};
 
 const CoachList = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
-  const [coaches, setCoaches] = useState<Coach[]>(mockCoaches);
+  const [coaches, setCoaches] = useState<Coach[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [showSignOutDialog, setShowSignOutDialog] = useState(false);
   const [openPopoverId, setOpenPopoverId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchCoaches = async () => {
+      try {
+        const token = localStorage.getItem("sessionToken");
+        if (!token) {
+          setIsLoading(false);
+          return;
+        }
+
+        const response = await fetch("http://localhost:4000/api/coaches", {
+          headers: {
+            "Authorization": `Bearer ${token}`
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const mappedCoaches = data.map((c: any) => ({
+            id: c.id.toString(),
+            name: c.name,
+            emoji: c.icon || getEmojiForType(c.type),
+            project: c.type,
+            lastActive: "Today" // Placeholder
+          }));
+          setCoaches(mappedCoaches);
+        } else {
+          console.error("Failed to fetch coaches:", response.statusText);
+        }
+      } catch (error) {
+        console.error("Error fetching coaches:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchCoaches();
+  }, []);
+
 
   const handleSignOut = () => {
     setShowSignOutDialog(false);

@@ -20,7 +20,8 @@ export async function coachRoutes(fastify: FastifyInstance) {
             properties: {
               id: { type: 'number' },
               name: { type: 'string' },
-              type: { type: 'string' }
+              type: { type: 'string' },
+              icon: { type: 'string' }
             }
           }
         }
@@ -43,7 +44,8 @@ export async function coachRoutes(fastify: FastifyInstance) {
         properties: {
           name: { type: 'string' },
           type: { type: 'string' },
-          context: { type: 'string' }
+          context: { type: 'string' },
+          icon: { type: 'string' }
         },
         required: ['name', 'type']
       },
@@ -55,6 +57,7 @@ export async function coachRoutes(fastify: FastifyInstance) {
             name: { type: 'string' },
             type: { type: 'string' },
             system_instruction: { type: 'string' },
+            icon: { type: 'string' },
             user_id: { type: 'number' }
           }
         },
@@ -68,7 +71,7 @@ export async function coachRoutes(fastify: FastifyInstance) {
     }
   }, async (request, reply) => {
     const user = request.user!;
-    const { name, type, context } = request.body as { name: string; type: string; context?: string }; // 'context' mapped to system_instruction
+    const { name, type, context, icon } = request.body as { name: string; type: string; context?: string; icon?: string }; // 'context' mapped to system_instruction
 
     if (!name || !type) {
       return reply.status(400).send({ error: 'Name and Type are required' });
@@ -78,6 +81,7 @@ export async function coachRoutes(fastify: FastifyInstance) {
       name,
       type,
       system_instruction: context,
+      icon,
       user_id: user.id
     });
 
