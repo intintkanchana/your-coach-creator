@@ -18,7 +18,8 @@ export async function creationRoutes(fastify: FastifyInstance) {
                 message: { 
                     description: 'User input or selection from previous step',
                     oneOf: [{ type: 'string' }, { type: 'object' }] 
-                }
+                },
+                reset: { type: 'boolean' }
             }
         },
         response: {
@@ -33,10 +34,10 @@ export async function creationRoutes(fastify: FastifyInstance) {
     }
   }, async (request, reply) => {
     const user = request.user!;
-    const { message } = request.body as { message: any };
+    const { message, reset } = request.body as { message: any; reset?: boolean };
     
     // Delegate to service
-    const result = await creationAgentService.handleMessage(user.id, message);
+    const result = await creationAgentService.handleMessage(user.id, message, reset);
     return result;
   });
 

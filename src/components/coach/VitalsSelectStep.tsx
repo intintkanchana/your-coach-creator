@@ -291,7 +291,7 @@ export function VitalsSelectStep({ suggestedVitals, isLoading, onSelect, onBack 
           onClick={handleContinue}
           disabled={selectedCount < 3 || isLoading}
           size="lg"
-          className="px-8 py-6 text-lg rounded-2xl"
+          className="px-8 py-6 text-lg rounded-2xl transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:scale-100 disabled:shadow-none"
         >
           {selectedCount < 3 ? `Pick ${3 - selectedCount} more` : "Almost Done!"}
           <ArrowRight className="ml-2 h-5 w-5" />

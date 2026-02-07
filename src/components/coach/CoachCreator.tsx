@@ -49,7 +49,7 @@ export function CoachCreator() {
           "Content-Type": "application/json",
           "Authorization": token,
         },
-        body: JSON.stringify({ message: goal }),
+        body: JSON.stringify({ message: goal, reset: true }),
       });
 
       if (!response.ok) {
@@ -60,6 +60,11 @@ export function CoachCreator() {
 
       // Map backend response to frontend types
       // Backend returns: { ui_data: { user_original_goal, rationale, options: [...] } }
+      if (!data.ui_data || !Array.isArray(data.ui_data.options)) {
+        console.error("Invalid API response format:", data);
+        throw new Error("Invalid response format from AI agent");
+      }
+
       const options = data.ui_data.options.map((opt: any, index: number) => ({
         id: `opt-${index}`,
         title: opt.activity_name,

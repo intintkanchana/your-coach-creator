@@ -36,7 +36,10 @@ export const creationAgentService = {
       delete sessions[String(userId)];
   },
 
-  async handleMessage(userId: number, userMessage: any) {
+  async handleMessage(userId: number, userMessage: any, shouldReset: boolean = false) {
+    if (shouldReset) {
+      this.clearSession(userId);
+    }
     const context = this.getOrCreateSession(userId);
     let prompt = '';
     let systemRole = '';
