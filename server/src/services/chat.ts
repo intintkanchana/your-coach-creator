@@ -140,6 +140,10 @@ Analyze the user input. Classify the user's intent into one of two categories an
 [CONSTRAINT: LIMITATION HANDLING]
 If the input is completely unrelated, gently explain that you are only an expert in this activity.
 
+[IMPORTANT: CLASSIFICATION RULES]
+- **LOG_NEW_ACTIVITY**: ONLY select this if the user EXPLICITLY mentions numbers, data, or says they are "ready to log" or "finished".
+- **GENERAL_CONSULT**: Select this for EVERYTHING ELSE. Even if they ask "how should I track?", answer the question first. Do NOT trigger a log unless they provide data.
+
 [OUTPUT FORMAT]
 Valid JSON only.
 {

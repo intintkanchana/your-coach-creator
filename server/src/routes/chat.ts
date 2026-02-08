@@ -174,13 +174,14 @@ export async function chatRoutes(fastify: FastifyInstance) {
         await chatService.saveMessage(coachId, user.id, 'model', result.response_text);
       }
 
-      // Include coach tracking data in the response
-      if (coach.trackings) {
+      // ONLY include coach tracking data if intention is LOG_NEW_ACTIVITY
+      if (result.intention === 'LOG_NEW_ACTIVITY' && coach.trackings) {
         result.trackings = coach.trackings;
       }
 
       // If it's a log activity, save the form request
-      if (result.intention === 'LOG_NEW_ACTIVITY' || (result.trackings && result.trackings.length > 0)) {
+      // Check for intention explicitly, or if trackings were attached (which implies log activity now)
+      if (result.intention === 'LOG_NEW_ACTIVITY') {
         // Construct the form request message
         const formRequest = {
             timestamp: new Date().toISOString(),
