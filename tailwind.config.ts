@@ -1,4 +1,6 @@
 import type { Config } from "tailwindcss";
+import tailwindAnimate from "tailwindcss-animate";
+import typography from "@tailwindcss/typography";
 
 // Chat color tokens added for CoachChat interface
 
@@ -111,5 +113,5 @@ export default {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [tailwindAnimate, typography],
 } satisfies Config;

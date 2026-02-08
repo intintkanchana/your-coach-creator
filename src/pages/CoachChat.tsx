@@ -374,30 +374,14 @@ export default function CoachChat() {
         }
 
         // Detailed Feedback (Deep Dive + Next Steps)
-        // Could format this nicely or just dump as text. 
-        // Let's create a combined message for now or separate ones.
-
-        const deepDive = analysis.deep_dive_insights?.map((s: string) => `• ${s}`).join('\n');
-        const nextSteps = analysis.next_action_items?.map((s: string) => `• ${s}`).join('\n');
-        const closing = analysis.closing_phrase;
-
-        const feedbackContent = `
-**Insights:**
-${deepDive}
-
-**Next Steps:**
-${nextSteps}
-
-${closing}
-            `.trim();
-
         setTimeout(() => {
           setMessages(prev => [
             ...prev,
             {
               id: `coach-analysis-${Date.now()}`,
               type: "coach",
-              content: feedbackContent,
+              content: "Analysis Results", // Fallback text
+              analysisData: analysis, // Pass structured data
               timestamp: new Date()
             }
           ]);

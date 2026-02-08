@@ -163,13 +163,19 @@ Valid JSON only.
         }
     }).filter(text => text).join('\n');
 
-    const vitalSignsSchema = coach.trackings ? coach.trackings.map((t: any) => `${t.name} (${t.type})`) : ["General Feedback"];
-    const userLogText = JSON.stringify(logData);
+    // Map the log data values to the detailed tracking definitions
+    const sessionContext = coach.trackings && coach.trackings.length > 0 
+      ? coach.trackings.map((t: any) => ({
+          name: t.name,
+          description: t.description,
+          type: t.type,
+          value: logData[t.id.toString()] || logData[t.id] || "Not provided"
+        }))
+      : Object.entries(logData).map(([key, value]) => ({ name: key, value }));
 
     const prompt = `
 [INPUT CONTEXT]
-- User Log Text: ${userLogText}
-- Required Vital Signs: ${JSON.stringify(vitalSignsSchema)}
+- Session Data: ${JSON.stringify(sessionContext)}
 - Coach Persona: ${coach.name} (${coach.type})
 - Historical Data:
 ${historyText}
@@ -178,9 +184,9 @@ ${historyText}
 You are the "Insight Engine." You validate user data and generate meaningful, persona-driven feedback.
 
 [TASK]
-1. **Validation:** Check if data contains values for required items.
+1. **Validation:** Check if "Session Data" contains valid values for the required items.
 2. **Analysis:**
-   - **Summary:** A 1-sentence "Vibe Check" of the performance.
+   - **Summary:** A 1-sentence "Vibe Check" of the performance based on the "Session Data".
    - **Metric Breakdown:** Brief, specific feedback on each number.
    - **Deep Dive:** 3 interesting observations or patterns, REFERENCING HISTORICAL DATA if available (e.g., "Better than last time...").
    - **Next Steps:** 3 concrete actions for next time.
@@ -213,6 +219,8 @@ Valid JSON only.
   }
 }
     `;
+
+    console.log(prompt)
 
     return geminiService.generateJSON(prompt, "You are a helpful assistant that outputs JSON.");
   }

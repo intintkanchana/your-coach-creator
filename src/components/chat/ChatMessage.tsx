@@ -3,6 +3,9 @@ import { motion } from "framer-motion";
 import { ChatMessage as ChatMessageType } from "@/types/chat";
 import { MiniAppForm } from "./MiniAppForm";
 import { TipBubble } from "./TipBubble";
+import { AnalysisDisplay } from "./AnalysisDisplay";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 interface ChatMessageProps {
   message: ChatMessageType;
@@ -107,6 +110,7 @@ export const ChatMessage = forwardRef<HTMLDivElement, ChatMessageProps>(
       );
     }
 
+
     // Coach message
     if (isCoach) {
       return (
@@ -114,14 +118,34 @@ export const ChatMessage = forwardRef<HTMLDivElement, ChatMessageProps>(
           ref={ref}
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
-          className="flex items-start gap-3 max-w-[85%]"
+          className="flex items-start gap-3 max-w-[95%]"
         >
           <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary/20 to-chat-highlight/20 flex items-center justify-center flex-shrink-0 mt-1">
             <span className="text-sm">{coachEmoji}</span>
           </div>
-          <div className="bg-chat-coach text-chat-coach-foreground rounded-2xl rounded-tl-md px-4 py-3 shadow-soft">
-            <p className="text-sm">{message.content}</p>
-          </div>
+
+          {/* Check for structured analysis data */}
+          {message.analysisData ? (
+            <AnalysisDisplay data={message.analysisData} />
+          ) : (
+            <div className="bg-chat-coach text-chat-coach-foreground rounded-2xl rounded-tl-md px-4 py-3 shadow-soft overflow-hidden">
+              <div className="prose prose-sm dark:prose-invert max-w-none break-words
+                prose-p:leading-relaxed prose-pre:bg-muted/50 prose-pre:p-2 prose-pre:rounded-lg
+                prose-headings:font-semibold prose-headings:text-foreground
+                prose-a:text-primary prose-a:underline-offset-4 hover:prose-a:underline
+                prose-strong:font-bold prose-strong:text-foreground
+                [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm]}
+                  components={{
+                    // Custom rendering for specific elements if needed
+                  }}
+                >
+                  {message.content}
+                </ReactMarkdown>
+              </div>
+            </div>
+          )}
         </motion.div>
       );
     }
