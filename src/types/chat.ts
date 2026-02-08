@@ -13,6 +13,7 @@ export interface AnalysisData {
   vital_sign_feedback: {
     label: string;
     value: number | string;
+    emoji?: string;
     comment: string;
   }[];
   deep_dive_insights: string[];
@@ -24,6 +25,7 @@ export interface AnalysisData {
 export interface FormField {
   id: string;
   label: string;
+  emoji: string;
   type: "slider" | "number" | "toggle" | "text";
   unit?: string;
   min?: number;

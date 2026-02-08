@@ -32,9 +32,9 @@ const defaultConfig: CoachConfig = {
 
 // Mock form fields for the vital signs check-in
 const mockFormFields: FormField[] = [
-  { id: "ouch-factor", label: "Ouch Factor", type: "slider", min: 1, max: 5, defaultValue: 2 },
-  { id: "gap", label: "Gap from floor", type: "number", unit: "cm", min: 0, max: 100, defaultValue: 15 },
-  { id: "hips-squared", label: "Hips Squared?", type: "toggle", defaultValue: false },
+  { id: "ouch-factor", label: "Ouch Factor", emoji: "🤕", type: "slider", min: 1, max: 5, defaultValue: 2 },
+  { id: "gap", label: "Gap from floor", emoji: "📏", type: "number", unit: "cm", min: 0, max: 100, defaultValue: 15 },
+  { id: "hips-squared", label: "Hips Squared?", emoji: "📐", type: "toggle", defaultValue: false },
 ];
 
 export default function CoachChat() {
@@ -261,6 +261,7 @@ export default function CoachChat() {
             const formFields = trackingsToUse.map((t: any) => ({
               id: t.id?.toString() || `field-${Math.random()}`,
               label: t.name,
+              emoji: t.emoji || "📊",
               type: (t.type === 'slider' ? 'slider' : 'number') as "slider" | "number",
               min: 1,
               max: 10,
@@ -327,7 +328,8 @@ export default function CoachChat() {
     const summaryParts: string[] = [];
     Object.entries(data).forEach(([key, value]) => {
       const label = config?.vitalSigns?.find(v => v.id === key)?.name || key;
-      summaryParts.push(`${label}: ${value}`);
+      const emoji = config?.vitalSigns?.find(v => v.id === key)?.emoji || "📊";
+      summaryParts.push(`${emoji} ${label}: ${value}`);
     });
 
     setMessages((prev) => [
@@ -359,6 +361,21 @@ export default function CoachChat() {
       if (res.ok) {
         const result = await res.json();
         const analysis = result.analysis;
+
+        // Inject emojis into feedback
+        if (analysis.vital_sign_feedback) {
+          analysis.vital_sign_feedback = analysis.vital_sign_feedback.map((item: any) => {
+            // Try to find matching tracking config
+            const tracking = config!.vitalSigns.find(v =>
+              v.name.toLowerCase() === item.label.toLowerCase() ||
+              v.id.toLowerCase() === item.label.toLowerCase()
+            );
+            return {
+              ...item,
+              emoji: tracking?.emoji || "📊"
+            };
+          });
+        }
 
         // Summary Impression
         if (analysis.summary_impression) {

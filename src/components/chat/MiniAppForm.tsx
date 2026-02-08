@@ -48,7 +48,10 @@ export function MiniAppForm({ fields, submitted, submittedData, onSubmit }: Mini
         <div className="space-y-2">
           {fields.map((field) => (
             <div key={field.id} className="flex justify-between text-sm">
-              <span className="text-muted-foreground">{field.label}</span>
+              <span className="text-muted-foreground flex items-center gap-2">
+                <span>{field.emoji}</span>
+                {field.label}
+              </span>
               <span className="font-medium text-foreground">
                 {field.type === "toggle"
                   ? (submittedData[field.id] ? "Yes" : "No")
@@ -72,7 +75,8 @@ export function MiniAppForm({ fields, submitted, submittedData, onSubmit }: Mini
         {fields.map((field) => (
           <div key={field.id} className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label htmlFor={field.id} className="text-sm font-medium">
+              <Label htmlFor={field.id} className="text-sm font-medium flex items-center gap-2">
+                <span className="text-lg">{field.emoji}</span>
                 {field.label}
               </Label>
               {field.type !== "toggle" && (

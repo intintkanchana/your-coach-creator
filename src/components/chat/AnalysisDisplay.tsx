@@ -33,7 +33,8 @@ export function AnalysisDisplay({ data }: AnalysisDisplayProps) {
                             className="bg-background border border-border/50 rounded-xl p-4 flex flex-col gap-2 shadow-sm hover:shadow-md transition-shadow"
                         >
                             <div className="flex justify-between items-start">
-                                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider line-clamp-1">
+                                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider line-clamp-1 flex items-center gap-1">
+                                    {item.emoji && <span className="text-base">{item.emoji}</span>}
                                     {item.label}
                                 </span>
                                 <span className="bg-primary/10 text-primary text-xs font-bold px-2 py-1 rounded-md">
