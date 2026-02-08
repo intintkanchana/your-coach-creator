@@ -8,14 +8,14 @@ interface AnalysisDisplayProps {
 
 export function AnalysisDisplay({ data }: AnalysisDisplayProps) {
     return (
-        <div className="space-y-6 w-full max-w-2xl bg-card/30 p-4 rounded-2xl">
+        <div className="space-y-6 w-full max-w-2xl bg-card border-2 border-muted p-6 rounded-2xl shadow-sm">
             {/* Summary Impression */}
             {data.summary_impression && (
                 <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4 }}
-                    className="text-lg font-medium text-foreground leading-relaxed"
+                    className="text-sm font-medium text-foreground leading-relaxed"
                 >
                     {data.summary_impression}
                 </motion.div>
@@ -33,11 +33,11 @@ export function AnalysisDisplay({ data }: AnalysisDisplayProps) {
                             className="bg-background border border-border/50 rounded-xl p-4 flex flex-col gap-2 shadow-sm hover:shadow-md transition-shadow"
                         >
                             <div className="flex justify-between items-start">
-                                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider line-clamp-1 flex items-center gap-1">
-                                    {item.emoji && <span className="text-base">{item.emoji}</span>}
+                                <span className="text-sm font-semibold text-muted-foreground uppercase tracking-wider line-clamp-1 flex items-center gap-1">
+                                    {item.emoji && <span className="text-sm">{item.emoji}</span>}
                                     {item.label}
                                 </span>
-                                <span className="bg-primary/10 text-primary text-xs font-bold px-2 py-1 rounded-md">
+                                <span className="bg-primary/10 text-primary text-sm font-bold px-2 py-1 rounded-md">
                                     {item.value === true ? 'Yes' : item.value === false ? 'No' : item.value}
                                 </span>
                             </div>
