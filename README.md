@@ -80,5 +80,15 @@ graph TD
     # Frontend starts at http://localhost:5173
     ```
 
+## 🤖 Built with AI
+
+This project was developed during a hackathon using cutting-edge AI tools to explore the future of "vibe coding":
+
+-   **Antigravity**: The entire development process was orchestrated by the Antigravity agent, allowing us to focus on high-level architecture and creative direction while the AI handled implementation.
+-   **Lovable**: Used for rapid prototyping of the initial UI components.
+-   **Google Gemini**: Powers the core "Creation Agent" logic within the app itself.
+
+We built this to learn how AI agents can accelerate software development and to experience the "vibe coding" workflow firsthand.
+
 ## 📜 License
 MIT
