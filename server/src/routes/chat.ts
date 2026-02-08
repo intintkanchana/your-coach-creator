@@ -115,7 +115,23 @@ export async function chatRoutes(fastify: FastifyInstance) {
     const lastLog = await chatService.getLastActivityLog(coachId, user.id);
     try {
       const greetingJson = await chatService.generateGreeting(coach, lastLog);
-      return JSON.parse(greetingJson);
+      const result = JSON.parse(greetingJson);
+
+      // Save greeting message to history
+      if (result.greeting_text) {
+        await chatService.saveMessage(coachId, user.id, 'model', result.greeting_text);
+      }
+
+      // Save question message to history
+      if (result.question_text) {
+        // Add a small delay for timestamp ordering if needed, but usually fine in same second
+        // To be safe, we could use a slightly adjusted timestamp if we were manually setting it,
+        // but the DB likely uses CURRENT_TIMESTAMP. 
+        // We'll just await the first one to ensure order.
+        await chatService.saveMessage(coachId, user.id, 'model', result.question_text);
+      }
+
+      return result;
     } catch (e) {
       request.log.error(e);
       return reply.status(500).send({ error: 'Failed to generate greeting' });
@@ -163,6 +179,16 @@ export async function chatRoutes(fastify: FastifyInstance) {
         result.trackings = coach.trackings;
       }
 
+      // If it's a log activity, save the form request
+      if (result.intention === 'LOG_NEW_ACTIVITY' || (result.trackings && result.trackings.length > 0)) {
+        // Construct the form request message
+        const formRequest = {
+            timestamp: new Date().toISOString(),
+            status: 'REQUESTED'
+        };
+        await chatService.saveMessage(coachId, user.id, 'model', `JSON_FORM_REQUEST:${JSON.stringify(formRequest)}`);
+      }
+
       return result;
     } catch (e) {
       request.log.error(e);
@@ -180,14 +206,15 @@ export async function chatRoutes(fastify: FastifyInstance) {
         type: 'object',
         properties: {
           coachId: { type: 'number' },
-          logData: { type: 'object' }
+          logData: { type: 'object' },
+          summaryText: { type: 'string' }
         },
         required: ['coachId', 'logData']
       }
     }
   }, async (request, reply) => {
     const user = request.user!;
-    const { coachId, logData } = request.body as { coachId: number; logData: any };
+    const { coachId, logData, summaryText } = request.body as { coachId: number; logData: any; summaryText?: string };
 
     const coach = await coachService.getCoachById(coachId);
     if (!coach || coach.user_id !== user.id) {
@@ -195,6 +222,24 @@ export async function chatRoutes(fastify: FastifyInstance) {
     }
 
     try {
+      // 0. Save User Log Summary (if provided)
+      if (summaryText) {
+         await chatService.saveMessage(coachId, user.id, 'user', summaryText);
+      }
+
+      // 0. Update Last Form Message to SUBMITTED
+      // We do this before analysis so history reflects it even if analysis fails (though we should probably do it after success to be safe, but UI optimistic update implies success)
+      try {
+        const formSubmitted = {
+            timestamp: new Date().toISOString(),
+            status: 'SUBMITTED',
+            formData: logData
+        };
+        await chatService.updateLastFormMessage(coachId, user.id, `JSON_FORM_SUBMITTED:${JSON.stringify(formSubmitted)}`);
+      } catch (e) {
+        console.error("Failed to update form message", e);
+      }
+
       const analysisJson = await chatService.analyzeActivityLog(coach, logData, user.id);
       
       // Save the log and feedback
@@ -205,15 +250,57 @@ export async function chatRoutes(fastify: FastifyInstance) {
       // specific feedback is complex to store in simple chat history, staying with activity_logs for now.
       // But we should probably add a model message so chat history sees the response.
       
-      const result = JSON.parse(analysisJson);
-      if (result.analysis && result.analysis.summary_impression) {
-          await chatService.saveMessage(coachId, user.id, 'model', result.analysis.summary_impression);
+      let result;
+      try {
+        result = JSON.parse(analysisJson);
+      } catch (e) {
+        console.error("Failed to parse analysis JSON:", analysisJson);
+        throw e;
+      }
+
+      // Save Full Analysis Data for History
+      if (result.analysis) {
+          // Use a special prefix to identify JSON data in history
+          const jsonContent = `JSON_ANALYSIS:${JSON.stringify(result.analysis)}`;
+          await chatService.saveMessage(coachId, user.id, 'model', jsonContent);
       }
 
       return result;
     } catch (e) {
       request.log.error(e);
       return reply.status(500).send({ error: 'Failed to analyze log' });
+    }
+  });
+
+  fastify.get('/api/chat/history/:coachId', {
+    preHandler: requireAuth,
+    schema: {
+      description: 'Get full chat history',
+      tags: ['Chat'],
+      security: [{ apiKey: [] }],
+      params: {
+        type: 'object',
+        properties: {
+          coachId: { type: 'number' }
+        },
+        required: ['coachId']
+      }
+    }
+  }, async (request, reply) => {
+    const user = request.user!;
+    const { coachId } = request.params as { coachId: number };
+
+    const coach = await coachService.getCoachById(coachId);
+    if (!coach || coach.user_id !== user.id) {
+      return reply.status(404).send({ error: 'Coach not found' });
+    }
+
+    try {
+      const history = await chatService.getFullHistory(coachId, user.id);
+      return history;
+    } catch (e) {
+      request.log.error(e);
+      return reply.status(500).send({ error: 'Failed to fetch history' });
     }
   });
 }

@@ -19,6 +19,15 @@ export const chatService = {
     }));
   },
 
+  getFullHistory: async (coachId: number, userId: number) => {
+    return db.query<{ id: number; role: 'user' | 'model'; content: string; timestamp: string }>(`
+      SELECT id, role, content, timestamp
+      FROM messages 
+      WHERE coach_id = ? AND user_id = ? 
+      ORDER BY timestamp ASC
+    `, [coachId, userId]);
+  },
+
   saveMessage: async (coachId: number, userId: number, role: 'user' | 'model', content: string) => {
     await db.run(`
       INSERT INTO messages (coach_id, user_id, role, content)
@@ -40,6 +49,22 @@ export const chatService = {
       INSERT INTO activity_logs (coach_id, user_id, data, feedback)
       VALUES (?, ?, ?, ?)
     `, [coachId, userId, data, feedback]);
+  },
+
+  updateLastFormMessage: async (coachId: number, userId: number, newContent: string) => {
+    // Find the last message that looks like a form request
+    const lastFormMsg = await db.get<{ id: number }>(`
+      SELECT id FROM messages
+      WHERE coach_id = ? AND user_id = ? AND role = 'model' AND (content LIKE 'JSON_FORM:%' OR content LIKE 'JSON_FORM_REQUEST:%')
+      ORDER BY timestamp DESC
+      LIMIT 1
+    `, [coachId, userId]);
+
+    if (lastFormMsg) {
+      await db.run(`
+        UPDATE messages SET content = ? WHERE id = ?
+      `, [newContent, lastFormMsg.id]);
+    }
   },
 
   generateGreeting: async (coach: any, lastLog: any) => {

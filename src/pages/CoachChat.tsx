@@ -10,6 +10,29 @@ import { ChatMessage as ChatMessageType, QuickAction, FormField } from "@/types/
 import { CoachConfig } from "@/types/coach";
 import { API_BASE_URL } from "@/config";
 
+// Helper to format date
+const formatDateLabel = (date: Date) => {
+  const today = new Date();
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+
+  if (date.toDateString() === today.toDateString()) {
+    return "Today";
+  } else if (date.toDateString() === yesterday.toDateString()) {
+    return "Yesterday";
+  } else {
+    return date.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  }
+};
+
+const DateLabel = ({ date }: { date: Date }) => (
+  <div className="flex items-center justify-center my-4">
+    <div className="bg-muted/50 px-3 py-1 rounded-full text-xs font-medium text-muted-foreground">
+      {formatDateLabel(date)}
+    </div>
+  </div>
+);
+
 // Default config if none provided
 const defaultConfig: CoachConfig = {
   goal: "Improve my flexibility",
@@ -43,6 +66,7 @@ export default function CoachChat() {
   const navigate = useNavigate();
   const [config, setConfig] = useState<CoachConfig | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isHistoryLoaded, setIsHistoryLoaded] = useState(false);
 
   const [messages, setMessages] = useState<ChatMessageType[]>([]);
   const [quickActions, setQuickActions] = useState<QuickAction[]>([]);
@@ -60,6 +84,165 @@ export default function CoachChat() {
     // Immediate scroll on mount/updates to prevent jump
     messagesEndRef.current?.scrollIntoView({ block: "nearest" });
   }, [messages, quickActions]);
+
+  // Load chat history
+  useEffect(() => {
+    const fetchHistory = async () => {
+      if (!coachId || !config) return;
+
+      try {
+        const token = localStorage.getItem("sessionToken");
+        if (!token) return;
+
+        const res = await fetch(`${API_BASE_URL}/api/chat/history/${coachId}`, {
+          headers: {
+            "Authorization": `Bearer ${token}`
+          }
+        });
+
+        if (res.ok) {
+          const historyData = await res.json();
+          // Map backend history to frontend messages
+          const mappedMessages: ChatMessageType[] = historyData.map((msg: any) => {
+            let content = msg.content;
+            let analysisData = undefined;
+
+            if (content.startsWith("JSON_ANALYSIS:")) {
+              try {
+                const jsonStr = content.substring("JSON_ANALYSIS:".length);
+                analysisData = JSON.parse(jsonStr);
+                content = "Analysis Results"; // Fallback text for list view or if component fails
+              } catch (e) {
+                console.error("Failed to parse analysis history", e);
+              }
+            } else if (content.startsWith("JSON_FORM_REQUEST:")) {
+              const formFields = config?.vitalSigns?.map((t: any) => {
+                // Logic to reconstruct form fields same as in handleSendMessage
+                let defaultValue: number | boolean | string = 5;
+                let min = 1;
+                let max = 10;
+                let unit = undefined;
+
+                switch (t.type) {
+                  case 'slider':
+                    defaultValue = 3;
+                    min = 1;
+                    max = 5;
+                    break;
+                  case 'boolean':
+                    defaultValue = false;
+                    break;
+                  case 'text':
+                    defaultValue = "";
+                    break;
+                  case 'number':
+                    defaultValue = 0;
+                    min = 0;
+                    max = 100;
+                    unit = t.unit;
+                    break;
+                }
+
+                return {
+                  id: t.id?.toString() || `field-${Math.random()}`,
+                  label: t.name,
+                  emoji: t.emoji,
+                  type: t.type,
+                  min,
+                  max,
+                  unit,
+                  defaultValue
+                };
+              }) || mockFormFields;
+
+              return {
+                id: msg.id.toString(),
+                type: "form",
+                content: "Please log your activity details below:",
+                timestamp: new Date(msg.timestamp),
+                formFields: formFields,
+                formSubmitted: false,
+              };
+            } else if (content.startsWith("JSON_FORM_SUBMITTED:")) {
+              try {
+                const jsonStr = content.substring("JSON_FORM_SUBMITTED:".length);
+                const parsed = JSON.parse(jsonStr);
+                const formFields = config?.vitalSigns?.map((t: any) => {
+                  // Logic to reconstruct form fields same as in handleSendMessage
+                  let defaultValue: number | boolean | string = 5;
+                  let min = 1;
+                  let max = 10;
+                  let unit = undefined;
+
+                  switch (t.type) {
+                    case 'slider':
+                      defaultValue = 3;
+                      min = 1;
+                      max = 5;
+                      break;
+                    case 'boolean':
+                      defaultValue = false;
+                      break;
+                    case 'text':
+                      defaultValue = "";
+                      break;
+                    case 'number':
+                      defaultValue = 0;
+                      min = 0;
+                      max = 100;
+                      unit = t.unit;
+                      break;
+                  }
+
+                  return {
+                    id: t.id?.toString() || `field-${Math.random()}`,
+                    label: t.name,
+                    emoji: t.emoji,
+                    type: t.type,
+                    min,
+                    max,
+                    unit,
+                    defaultValue
+                  };
+                }) || mockFormFields;
+
+                return {
+                  id: msg.id.toString(),
+                  type: "form",
+                  content: "Log Submitted", // Or keep "Please log..." but standard is often to show state
+                  timestamp: new Date(msg.timestamp),
+                  formFields: formFields,
+                  formSubmitted: true,
+                  formData: parsed.formData
+                };
+              } catch (e) {
+                console.error("Failed to parse form submitted", e);
+              }
+            }
+
+            return {
+              id: msg.id.toString(),
+              type: msg.role === 'model' ? 'coach' : 'user',
+              content: content,
+              analysisData: analysisData,
+              timestamp: new Date(msg.timestamp)
+            };
+          });
+
+          if (mappedMessages.length > 0) {
+            setMessages(mappedMessages);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load history", err);
+      } finally {
+        setIsHistoryLoaded(true);
+      }
+    };
+
+    fetchHistory();
+  }, [coachId, config]);
+
 
   useEffect(() => {
     const fetchCoach = async () => {
@@ -199,10 +382,13 @@ export default function CoachChat() {
   };
 
   useEffect(() => {
-    if (config && messages.length === 0) {
+    if (config && isHistoryLoaded && messages.length === 0 && !isLoading) {
+      // Only fetch greeting if we have no history AND config is loaded AND history is confirmed loaded
       fetchGreeting();
     }
-  }, [config, coachId]);
+  }, [config, coachId, isLoading, isHistoryLoaded, messages.length]);
+
+
 
   const handleQuickAction = (action: QuickAction) => {
     handleSendMessage(action.label);
@@ -361,12 +547,14 @@ export default function CoachChat() {
       summaryParts.push(`${emoji} ${label}: ${value}`);
     });
 
+    const summaryText = summaryParts.join(" • ");
+
     setMessages((prev) => [
       ...prev,
       {
         id: `user-log-${Date.now()}`,
         type: "user",
-        content: `📊 ${summaryParts.join(" • ")}`,
+        content: summaryText,
         timestamp: new Date(),
       },
     ]);
@@ -383,7 +571,8 @@ export default function CoachChat() {
         },
         body: JSON.stringify({
           coachId: parseInt(coachId!),
-          logData: data
+          logData: data,
+          summaryText: summaryText
         })
       });
 
@@ -404,19 +593,6 @@ export default function CoachChat() {
               emoji: tracking?.emoji || "📊"
             };
           });
-        }
-
-        // Summary Impression
-        if (analysis.summary_impression) {
-          setMessages(prev => [
-            ...prev,
-            {
-              id: `coach-sum-${Date.now()}`,
-              type: "coach",
-              content: analysis.summary_impression,
-              timestamp: new Date()
-            }
-          ]);
         }
 
         // Detailed Feedback (Deep Dive + Next Steps)
@@ -472,14 +648,27 @@ export default function CoachChat() {
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4 scroll-smooth">
         <div className="max-w-3xl mx-auto space-y-4">
           <AnimatePresence mode="popLayout">
-            {messages.map((message) => (
-              <ChatMessage
-                key={message.id}
-                message={message}
-                coachEmoji={config.persona?.emoji}
-                onFormSubmit={handleFormSubmit}
-              />
-            ))}
+            {(() => {
+              let lastDate: string | null = null;
+              return messages.map((message, index) => {
+                const messageDate = new Date(message.timestamp);
+                const dateKey = messageDate.toDateString();
+                const showDateLabel = lastDate !== dateKey;
+                lastDate = dateKey;
+
+                return (
+                  <div key={message.id}>
+                    {showDateLabel && <DateLabel date={messageDate} />}
+                    <ChatMessage
+                      message={message}
+                      coachEmoji={config.persona?.emoji}
+                      onFormSubmit={handleFormSubmit}
+                      disabled={index !== messages.length - 1} // Only enable form if it's the last message
+                    />
+                  </div>
+                );
+              });
+            })()}
           </AnimatePresence>
 
           {/* Typing indicator */}

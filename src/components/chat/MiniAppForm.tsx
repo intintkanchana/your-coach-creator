@@ -13,9 +13,10 @@ interface MiniAppFormProps {
   submitted: boolean;
   submittedData?: Record<string, number | boolean | string>;
   onSubmit: (data: Record<string, number | boolean | string>) => void;
+  disabled?: boolean;
 }
 
-export function MiniAppForm({ fields, submitted, submittedData, onSubmit }: MiniAppFormProps) {
+export function MiniAppForm({ fields, submitted, submittedData, onSubmit, disabled }: MiniAppFormProps) {
   const [formData, setFormData] = useState<Record<string, number | boolean | string>>(() => {
     const initial: Record<string, number | boolean | string> = {};
     fields.forEach((field) => {
@@ -31,6 +32,7 @@ export function MiniAppForm({ fields, submitted, submittedData, onSubmit }: Mini
   });
 
   const handleSubmit = () => {
+    if (disabled) return;
     onSubmit(formData);
   };
 
@@ -69,9 +71,9 @@ export function MiniAppForm({ fields, submitted, submittedData, onSubmit }: Mini
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="bg-card rounded-2xl p-5 border-2 border-primary/20 shadow-soft"
+      className={`bg-card rounded-2xl p-5 border-2 border-primary/20 shadow-soft ${disabled ? 'opacity-60 grayscale-[0.5]' : ''}`}
     >
-      <div className="space-y-5">
+      <div className={`space-y-5 ${disabled ? 'pointer-events-none' : ''}`}>
         {fields.map((field) => (
           <div key={field.id} className="space-y-2">
             <div className="flex items-center justify-between">
@@ -157,9 +159,10 @@ export function MiniAppForm({ fields, submitted, submittedData, onSubmit }: Mini
         onClick={handleSubmit}
         className="w-full mt-5 rounded-xl"
         size="lg"
+        disabled={disabled}
       >
         <Send className="mr-2 h-4 w-4" />
-        Submit Log
+        {disabled ? 'Previous Log' : 'Submit Log'}
       </Button>
     </motion.div >
   );

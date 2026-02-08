@@ -59,7 +59,14 @@ export const geminiService = {
         }]
       });
 
-      return response.text || '{}';
+      let text = response.text || '{}';
+      
+      // Remove markdown code blocks if present
+      if (text.includes('```')) {
+        text = text.replace(/```json\n?|```/g, '').trim();
+      }
+      
+      return text;
     } catch (error: any) {
       console.error("Gemini API JSON Error:", error);
       throw new Error(`Gemini API JSON Error: ${error.message}`);

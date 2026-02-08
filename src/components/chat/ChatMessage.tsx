@@ -11,10 +11,11 @@ interface ChatMessageProps {
   message: ChatMessageType;
   coachEmoji?: string;
   onFormSubmit?: (messageId: string, data: Record<string, number | boolean | string>) => void;
+  disabled?: boolean;
 }
 
 export const ChatMessage = forwardRef<HTMLDivElement, ChatMessageProps>(
-  ({ message, coachEmoji = "🌟", onFormSubmit }, ref) => {
+  ({ message, coachEmoji = "🌟", onFormSubmit, disabled }, ref) => {
     const isCoach = message.type === "coach" || message.type === "form" || message.type === "tip" || message.type === "image";
     const isSystem = message.type === "system";
 
@@ -104,6 +105,7 @@ export const ChatMessage = forwardRef<HTMLDivElement, ChatMessageProps>(
               submitted={message.formSubmitted || false}
               submittedData={message.formData}
               onSubmit={(data) => onFormSubmit?.(message.id, data)}
+              disabled={message.formSubmitted ? false : !!disabled}
             />
           </div>
         </motion.div>
