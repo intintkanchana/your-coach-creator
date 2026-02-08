@@ -15,21 +15,11 @@ export const geminiService = {
         return "Error: Gemini API Key not configured.";
     }
 
-    // Map internal history format to @google/genai format
-    // The new SDK likely expects: { role: 'user' | 'model', content: lines } or similar.
-    // Based on common patterns for this new SDK (Unified):
-    
-    // Construct the request
-    // The new SDK commonly uses client.models.generateContent or similar for simple calls,
-    // but for chat, it might vary.
-    // Let's assume standard generateContent with history as part of the "contents" array.
-    
     const contents = history.map(msg => ({
       role: msg.role,
       parts: msg.parts
     }));
     
-    // Add the new message
     contents.push({
       role: 'user',
       parts: [{ text: newMessage }]
@@ -48,6 +38,31 @@ export const geminiService = {
     } catch (error: any) {
       console.error("Gemini API Error:", error);
       throw new Error(`Gemini API Error: ${error.message}`);
+    }
+  },
+
+  async generateJSON(prompt: string, systemInstruction: string) {
+    if (!CONFIG.GEMINI_API_KEY) {
+        throw new Error("Gemini API Key not configured.");
+    }
+
+    try {
+      const response = await client.models.generateContent({
+        model: 'gemini-2.5-flash',
+        config: {
+          systemInstruction: systemInstruction,
+          responseMimeType: 'application/json',
+        },
+        contents: [{
+          role: 'user',
+          parts: [{ text: prompt }]
+        }]
+      });
+
+      return response.text || '{}';
+    } catch (error: any) {
+      console.error("Gemini API JSON Error:", error);
+      throw new Error(`Gemini API JSON Error: ${error.message}`);
     }
   }
 };

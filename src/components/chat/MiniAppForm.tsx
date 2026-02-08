@@ -11,16 +11,18 @@ import { CheckCircle2, Send } from "lucide-react";
 interface MiniAppFormProps {
   fields: FormField[];
   submitted: boolean;
-  submittedData?: Record<string, number | boolean>;
-  onSubmit: (data: Record<string, number | boolean>) => void;
+  submittedData?: Record<string, number | boolean | string>;
+  onSubmit: (data: Record<string, number | boolean | string>) => void;
 }
 
 export function MiniAppForm({ fields, submitted, submittedData, onSubmit }: MiniAppFormProps) {
-  const [formData, setFormData] = useState<Record<string, number | boolean>>(() => {
-    const initial: Record<string, number | boolean> = {};
+  const [formData, setFormData] = useState<Record<string, number | boolean | string>>(() => {
+    const initial: Record<string, number | boolean | string> = {};
     fields.forEach((field) => {
       if (field.type === "toggle") {
         initial[field.id] = field.defaultValue ?? false;
+      } else if (field.type === "text") {
+        initial[field.id] = field.defaultValue ?? "";
       } else {
         initial[field.id] = field.defaultValue ?? (field.min ?? 0);
       }
@@ -48,7 +50,7 @@ export function MiniAppForm({ fields, submitted, submittedData, onSubmit }: Mini
             <div key={field.id} className="flex justify-between text-sm">
               <span className="text-muted-foreground">{field.label}</span>
               <span className="font-medium text-foreground">
-                {field.type === "toggle" 
+                {field.type === "toggle"
                   ? (submittedData[field.id] ? "Yes" : "No")
                   : `${submittedData[field.id]}${field.unit ? ` ${field.unit}` : ""}`
                 }
@@ -87,7 +89,7 @@ export function MiniAppForm({ fields, submitted, submittedData, onSubmit }: Mini
                 max={field.max ?? 5}
                 step={1}
                 value={[formData[field.id] as number]}
-                onValueChange={([value]) => 
+                onValueChange={([value]) =>
                   setFormData((prev) => ({ ...prev, [field.id]: value }))
                 }
                 className="py-2"
@@ -102,10 +104,10 @@ export function MiniAppForm({ fields, submitted, submittedData, onSubmit }: Mini
                   min={field.min}
                   max={field.max}
                   value={formData[field.id] as number}
-                  onChange={(e) => 
-                    setFormData((prev) => ({ 
-                      ...prev, 
-                      [field.id]: parseFloat(e.target.value) || 0 
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      [field.id]: parseFloat(e.target.value) || 0
                     }))
                   }
                   className="w-24"
@@ -121,7 +123,7 @@ export function MiniAppForm({ fields, submitted, submittedData, onSubmit }: Mini
                 <Switch
                   id={field.id}
                   checked={formData[field.id] as boolean}
-                  onCheckedChange={(checked) => 
+                  onCheckedChange={(checked) =>
                     setFormData((prev) => ({ ...prev, [field.id]: checked }))
                   }
                 />

@@ -88,4 +88,132 @@ export async function chatRoutes(fastify: FastifyInstance) {
 
     return { response: responseText };
   });
+
+  fastify.post('/api/chat/greeting', {
+    preHandler: requireAuth,
+    schema: {
+      description: 'Get a greeting from the coach',
+      tags: ['Chat'],
+      security: [{ apiKey: [] }],
+      body: {
+        type: 'object',
+        properties: {
+          coachId: { type: 'number' }
+        },
+        required: ['coachId']
+      }
+    }
+  }, async (request, reply) => {
+    const user = request.user!;
+    const { coachId } = request.body as { coachId: number };
+
+    const coach = coachService.getCoachById(coachId);
+    if (!coach || coach.user_id !== user.id) {
+      return reply.status(404).send({ error: 'Coach not found' });
+    }
+
+    const lastLog = chatService.getLastActivityLog(coachId, user.id);
+    try {
+      const greetingJson = await chatService.generateGreeting(coach, lastLog);
+      return JSON.parse(greetingJson);
+    } catch (e) {
+      request.log.error(e);
+      return reply.status(500).send({ error: 'Failed to generate greeting' });
+    }
+  });
+
+  fastify.post('/api/chat/classify', {
+    preHandler: requireAuth,
+    schema: {
+      description: 'Classify user intention',
+      tags: ['Chat'],
+      security: [{ apiKey: [] }],
+      body: {
+        type: 'object',
+        properties: {
+          coachId: { type: 'number' },
+          message: { type: 'string' }
+        },
+        required: ['coachId', 'message']
+      }
+    }
+  }, async (request, reply) => {
+    const user = request.user!;
+    const { coachId, message } = request.body as { coachId: number; message: string };
+
+    const coach = coachService.getCoachById(coachId);
+    if (!coach || coach.user_id !== user.id) {
+      return reply.status(404).send({ error: 'Coach not found' });
+    }
+
+    // Save user message first
+    chatService.saveMessage(coachId, user.id, 'user', message);
+
+    try {
+      const classificationJson = await chatService.classifyIntention(coach, message);
+      const result = JSON.parse(classificationJson);
+      
+      // If it's a general consult, save the response as a model message
+      if (result.intention === 'GENERAL_CONSULT' && result.response_text) {
+        chatService.saveMessage(coachId, user.id, 'model', result.response_text);
+      }
+
+      // Include coach tracking data in the response
+      if (coach.trackings) {
+        result.trackings = coach.trackings;
+      }
+
+      return result;
+    } catch (e) {
+      request.log.error(e);
+      return reply.status(500).send({ error: 'Failed to classify message' });
+    }
+  });
+
+  fastify.post('/api/chat/analyze', {
+    preHandler: requireAuth,
+    schema: {
+      description: 'Analyze activity log',
+      tags: ['Chat'],
+      security: [{ apiKey: [] }],
+      body: {
+        type: 'object',
+        properties: {
+          coachId: { type: 'number' },
+          logData: { type: 'object' }
+        },
+        required: ['coachId', 'logData']
+      }
+    }
+  }, async (request, reply) => {
+    const user = request.user!;
+    const { coachId, logData } = request.body as { coachId: number; logData: any };
+
+    const coach = coachService.getCoachById(coachId);
+    if (!coach || coach.user_id !== user.id) {
+      return reply.status(404).send({ error: 'Coach not found' });
+    }
+
+    try {
+      const analysisJson = await chatService.analyzeActivityLog(coach, logData, user.id);
+      
+      // Save the log and feedback
+      chatService.saveActivityLog(coachId, user.id, JSON.stringify(logData), analysisJson);
+      
+      // Also save as a chat message for context? 
+      // Maybe just the summary or a "Log submitted" system message + Coach feedback
+      // specific feedback is complex to store in simple chat history, staying with activity_logs for now.
+      // But we should probably add a model message so chat history sees the response.
+      
+      const result = JSON.parse(analysisJson);
+      if (result.analysis && result.analysis.summary_impression) {
+          chatService.saveMessage(coachId, user.id, 'model', result.analysis.summary_impression);
+      }
+
+      return result;
+    } catch (e) {
+      request.log.error(e);
+      return reply.status(500).send({ error: 'Failed to analyze log' });
+    }
+  });
 }

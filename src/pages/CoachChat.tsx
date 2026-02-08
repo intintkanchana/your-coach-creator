@@ -134,111 +134,186 @@ export default function CoachChat() {
   }, [coachId, navigate]);
 
   // Mock chat flow - only start when config is loaded
-  useEffect(() => {
-    if (!config || chatPhase !== 0) return;
+  // Chat flow with backend integration
+  const fetchGreeting = async () => {
+    if (!coachId || !config) return;
 
-    // Initial greeting
-    setTimeout(() => {
-      setMessages([
-        {
-          id: "1",
-          type: "coach",
-          content: `Hey there! 👋 I'm Coach ${config.persona?.name || "Sunny"}, and I'm SO excited to work with you!`,
-          timestamp: new Date(),
+    // Check if we already have messages, if so, don't fetch greeting again (unless we want to?)
+    // For now, only fetch if empty
+    if (messages.length > 0) return;
+
+    try {
+      setIsTyping(true);
+      const token = localStorage.getItem("sessionToken");
+      const res = await fetch(`http://localhost:4000/api/chat/greeting`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
         },
-      ]);
-      setChatPhase(1);
-    }, 500);
-  }, [chatPhase, config]);
+        body: JSON.stringify({ coachId: parseInt(coachId) })
+      });
 
-  useEffect(() => {
-    if (chatPhase === 1) {
-      // Follow-up question with quick actions
-      setTimeout(() => {
-        setIsTyping(true);
+      if (res.ok) {
+        const data = await res.json();
+
+        // Greeting
+        setMessages(prev => [
+          ...prev,
+          {
+            id: `coach-greet-${Date.now()}`,
+            type: "coach",
+            content: data.greeting_text,
+            timestamp: new Date()
+          }
+        ]);
+
+        // Question (delayed slightly for effect)
         setTimeout(() => {
-          setIsTyping(false);
-          setMessages((prev) => [
+          setMessages(prev => [
             ...prev,
             {
-              id: "2",
+              id: `coach-q-${Date.now()}`,
               type: "coach",
-              content: "Before we dive in, have you had a chance to warm up today? 🔥",
-              timestamp: new Date(),
-            },
+              content: data.question_text,
+              timestamp: new Date()
+            }
           ]);
-          setQuickActions([
-            { id: "ready", label: "I'm ready!" },
-            { id: "not-yet", label: "Not yet" },
-            { id: "show-me", label: "Show me how" },
-          ]);
-          setChatPhase(2);
-        }, 1000);
-      }, 1500);
-    }
-  }, [chatPhase]);
 
-  const handleQuickAction = (action: QuickAction) => {
-    // Add user message
-    setMessages((prev) => [
-      ...prev,
-      {
-        id: `user-${Date.now()}`,
-        type: "user",
-        content: action.label,
-        timestamp: new Date(),
-      },
-    ]);
-    setQuickActions([]);
+          // Quick Actions
+          if (data.quick_actions && Array.isArray(data.quick_actions)) {
+            setQuickActions(data.quick_actions.map((qa: string, idx: number) => ({
+              id: `qa-${idx}`,
+              label: qa
+            })));
+          }
+        }, 800);
 
-    if (action.id === "show-me") {
-      // Send tip bubble
-      setTimeout(() => {
-        setIsTyping(true);
-        setTimeout(() => {
-          setIsTyping(false);
-          setMessages((prev) => [
-            ...prev,
-            {
-              id: `tip-${Date.now()}`,
-              type: "tip",
-              content: "A quick 5-minute dynamic warm-up works wonders! Try leg swings, hip circles, and light jogging in place. Your muscles will thank you! 🙏",
-              timestamp: new Date(),
-            },
-          ]);
-          setChatPhase(3);
-        }, 1200);
-      }, 500);
-    } else if (action.id === "ready" || action.id === "not-yet") {
-      setChatPhase(3);
+      }
+    } catch (err) {
+      console.error("Failed to fetch greeting", err);
+    } finally {
+      setIsTyping(false);
     }
   };
 
   useEffect(() => {
-    if (chatPhase === 3) {
-      // Ask for data entry
-      setTimeout(() => {
-        setIsTyping(true);
-        setTimeout(() => {
-          setIsTyping(false);
-          setMessages((prev) => [
+    if (config && messages.length === 0) {
+      fetchGreeting();
+    }
+  }, [config, coachId]);
+
+  const handleQuickAction = (action: QuickAction) => {
+    handleSendMessage(action.label);
+    setQuickActions([]);
+  };
+
+  const handleSendMessage = async (content: string) => {
+    // Optimistically add user message
+    const userMsgId = `user-${Date.now()}`;
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: userMsgId,
+        type: "user",
+        content,
+        timestamp: new Date(),
+      },
+    ]);
+
+    setIsTyping(true);
+
+    try {
+      const token = localStorage.getItem("sessionToken");
+      const res = await fetch(`http://localhost:4000/api/chat/classify`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          coachId: parseInt(coachId!),
+          message: content
+        })
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+
+        if (data.intention === "LOG_NEW_ACTIVITY" || (data.trackings && data.trackings.length > 0)) {
+          // Coach response first (enthusiastic acknowledgement)
+          if (data.response_text) {
+            setMessages(prev => [
+              ...prev,
+              {
+                id: `coach-res-${Date.now()}`,
+                type: "coach",
+                content: data.response_text,
+                timestamp: new Date()
+              }
+            ]);
+          }
+
+          // Show Form
+          setTimeout(() => {
+            const trackingsToUse = data.trackings || config?.vitalSigns || [];
+
+            const formFields = trackingsToUse.map((t: any) => ({
+              id: t.id?.toString() || `field-${Math.random()}`,
+              label: t.name,
+              type: (t.type === 'slider' ? 'slider' : 'number') as "slider" | "number",
+              min: 1,
+              max: 10,
+              defaultValue: 5
+            }));
+
+            if (formFields.length === 0) {
+              formFields.push(...mockFormFields);
+            }
+
+            setMessages(prev => [
+              ...prev,
+              {
+                id: `form-${Date.now()}`,
+                type: "form",
+                content: "Please log your activity details below:",
+                timestamp: new Date(),
+                formFields: formFields,
+                formSubmitted: false,
+              }
+            ]);
+          }, 500);
+
+        } else {
+          // GENERAL_CONSULT
+          setMessages(prev => [
             ...prev,
             {
-              id: `form-${Date.now()}`,
-              type: "form",
-              content: "Awesome! Let's log your session. Fill this out after your stretch:",
-              timestamp: new Date(),
-              formFields: mockFormFields,
-              formSubmitted: false,
-            },
+              id: `coach-res-${Date.now()}`,
+              type: "coach",
+              content: data.response_text,
+              timestamp: new Date()
+            }
           ]);
-          setChatPhase(4);
-        }, 1500);
-      }, 1000);
+        }
+      }
+    } catch (err) {
+      console.error("Error sending message", err);
+      setMessages(prev => [
+        ...prev,
+        {
+          id: `err-${Date.now()}`,
+          type: "system",
+          content: "Sorry, I had trouble connecting. Please try again.",
+          timestamp: new Date()
+        }
+      ]);
+    } finally {
+      setIsTyping(false);
     }
-  }, [chatPhase]);
+  };
 
-  const handleFormSubmit = (messageId: string, data: Record<string, number | boolean>) => {
+  const handleFormSubmit = async (messageId: string, data: Record<string, number | boolean | string>) => {
     // Update the form message to show submitted state
     setMessages((prev) =>
       prev.map((msg) =>
@@ -250,13 +325,9 @@ export default function CoachChat() {
 
     // Add user summary message
     const summaryParts: string[] = [];
-    mockFormFields.forEach((field) => {
-      const value = data[field.id];
-      if (field.type === "toggle") {
-        summaryParts.push(`${field.label}: ${value ? "Yes" : "No"}`);
-      } else {
-        summaryParts.push(`${field.label}: ${value}${field.unit ? ` ${field.unit}` : ""}`);
-      }
+    Object.entries(data).forEach(([key, value]) => {
+      const label = config?.vitalSigns?.find(v => v.id === key)?.name || key;
+      summaryParts.push(`${label}: ${value}`);
     });
 
     setMessages((prev) => [
@@ -269,58 +340,87 @@ export default function CoachChat() {
       },
     ]);
 
-    // Coach celebration
-    setTimeout(() => {
-      setIsTyping(true);
-      setTimeout(() => {
-        setIsTyping(false);
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: `celebrate-${Date.now()}`,
-            type: "system",
-            content: "Day 1 Complete 🎉",
-            timestamp: new Date(),
-          },
-          {
-            id: `coach-final-${Date.now()}`,
-            type: "coach",
-            content: "AMAZING work! 🌟 You showed up, you did the thing, and that's what counts! I'm already proud of you. See you tomorrow for Day 2! 💪",
-            timestamp: new Date(),
-          },
-        ]);
-        setChatPhase(5);
-      }, 1200);
-    }, 800);
-  };
+    setIsTyping(true);
 
-  const handleSendMessage = (content: string) => {
-    setMessages((prev) => [
-      ...prev,
-      {
-        id: `user-${Date.now()}`,
-        type: "user",
-        content,
-        timestamp: new Date(),
-      },
-    ]);
+    try {
+      const token = localStorage.getItem("sessionToken");
+      const res = await fetch(`http://localhost:4000/api/chat/analyze`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          coachId: parseInt(coachId!),
+          logData: data
+        })
+      });
 
-    // Simple echo response
-    setTimeout(() => {
-      setIsTyping(true);
-      setTimeout(() => {
-        setIsTyping(false);
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: `coach-${Date.now()}`,
-            type: "coach",
-            content: "Thanks for sharing! I'm here to support you every step of the way. 💛",
-            timestamp: new Date(),
-          },
-        ]);
-      }, 1000);
-    }, 500);
+      if (res.ok) {
+        const result = await res.json();
+        const analysis = result.analysis;
+
+        // Summary Impression
+        if (analysis.summary_impression) {
+          setMessages(prev => [
+            ...prev,
+            {
+              id: `coach-sum-${Date.now()}`,
+              type: "coach",
+              content: analysis.summary_impression,
+              timestamp: new Date()
+            }
+          ]);
+        }
+
+        // Detailed Feedback (Deep Dive + Next Steps)
+        // Could format this nicely or just dump as text. 
+        // Let's create a combined message for now or separate ones.
+
+        const deepDive = analysis.deep_dive_insights?.map((s: string) => `• ${s}`).join('\n');
+        const nextSteps = analysis.next_action_items?.map((s: string) => `• ${s}`).join('\n');
+        const closing = analysis.closing_phrase;
+
+        const feedbackContent = `
+**Insights:**
+${deepDive}
+
+**Next Steps:**
+${nextSteps}
+
+${closing}
+            `.trim();
+
+        setTimeout(() => {
+          setMessages(prev => [
+            ...prev,
+            {
+              id: `coach-analysis-${Date.now()}`,
+              type: "coach",
+              content: feedbackContent,
+              timestamp: new Date()
+            }
+          ]);
+
+          // Day Complete Celebration
+          setMessages(prev => [
+            ...prev,
+            {
+              id: `celebrate-${Date.now()}`,
+              type: "system",
+              content: "Session Logged 🎉",
+              timestamp: new Date(),
+            }
+          ]);
+
+        }, 800);
+      }
+
+    } catch (err) {
+      console.error("Error analyzing log", err);
+    } finally {
+      setIsTyping(false);
+    }
   };
 
   if (isLoading || !config) {

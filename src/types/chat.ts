@@ -11,11 +11,11 @@ export type MessageType =
 export interface FormField {
   id: string;
   label: string;
-  type: "slider" | "number" | "toggle";
+  type: "slider" | "number" | "toggle" | "text";
   unit?: string;
   min?: number;
   max?: number;
-  defaultValue?: number | boolean;
+  defaultValue?: number | boolean | string;
 }
 
 export interface ChatMessage {
@@ -26,7 +26,7 @@ export interface ChatMessage {
   // For form messages
   formFields?: FormField[];
   formSubmitted?: boolean;
-  formData?: Record<string, number | boolean>;
+  formData?: Record<string, number | boolean | string>;
   // For image messages
   imageUrl?: string;
   imageAlt?: string;

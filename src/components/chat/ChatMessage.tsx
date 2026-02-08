@@ -7,7 +7,7 @@ import { TipBubble } from "./TipBubble";
 interface ChatMessageProps {
   message: ChatMessageType;
   coachEmoji?: string;
-  onFormSubmit?: (messageId: string, data: Record<string, number | boolean>) => void;
+  onFormSubmit?: (messageId: string, data: Record<string, number | boolean | string>) => void;
 }
 
 export const ChatMessage = forwardRef<HTMLDivElement, ChatMessageProps>(
