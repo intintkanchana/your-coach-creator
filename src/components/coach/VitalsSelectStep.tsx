@@ -204,7 +204,7 @@ export function VitalsSelectStep({ suggestedVitals, isLoading, onSelect, onBack,
                         <span>{getTypeConfig(vital.type).label}</span>
                       </span>
                     </div>
-                    <p className="text-sm text-muted-foreground line-clamp-2 md:line-clamp-3" title={vital.description}>
+                    <p className="text-sm text-muted-foreground line-clamp-3" title={vital.description}>
                       {vital.description}
                     </p>
                   </div>

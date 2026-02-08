@@ -31,3 +31,5 @@ dist-ssr
 .env.production.local
 
 deployment_guide.md
+life-coach.db-shm
+life-coach.db-wal

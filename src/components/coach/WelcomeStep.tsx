@@ -87,15 +87,6 @@ export function WelcomeStep({ onStart, onPrefetch }: WelcomeStepProps) {
           Let's Begin
         </Button>
       </motion.div>
-
-      <motion.p
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.7 }}
-        className="text-sm text-muted-foreground mt-6"
-      >
-        Takes about 2 minutes • Everything can be changed later
-      </motion.p>
     </motion.div>
   );
 }
