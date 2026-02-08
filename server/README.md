@@ -1,6 +1,6 @@
 # Life Coach API
 
-This directory contains the backend API for the Your Coach Creator application. It is built with Fastify, TypeScript, and SQLite, and integrates with Google's Gemini AI.
+This directory contains the backend API for the Your Coach application. It is built with Fastify, TypeScript, and SQLite, and integrates with Google's Gemini AI.
 
 ## Prerequisites
 

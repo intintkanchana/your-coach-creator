@@ -1,10 +1,10 @@
-# Your Coach Creator (powered by Google Gemini)
+# Your Coach (powered by Google Gemini)
 
-![Banner](https://via.placeholder.com/1200x300?text=Your+Coach+Creator+AI)
+![Banner](https://via.placeholder.com/1200x300?text=Your+Coach+AI)
 
 ## 💡 Innovation: The "Meta-Coach"
 
-Most AI coaching apps give you a generic chatbot. **Your Coach Creator** is different.
+Most AI coaching apps give you a generic chatbot. **Your Coach** is different.
 
 It uses an advanced **Creation Agent** (powered by **Google Gemini 2.5 Flash**) to interview you, analyze your vague goals, and architect a **custom AI persona** with:
 1.  **"Tracer Bullet" Experiments**: It breaks abstract goals ("Get fit") into tiny, measurable actions ("Walk 10m daily").
