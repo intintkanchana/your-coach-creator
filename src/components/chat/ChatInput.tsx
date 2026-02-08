@@ -28,25 +28,6 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
       className="w-full bg-background/95 backdrop-blur-sm border-t border-border px-4 py-3"
     >
       <div className="flex items-center gap-2 max-w-3xl mx-auto">
-        {/* Attachment buttons */}
-        <div className="flex gap-1">
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            className="h-9 w-9 text-muted-foreground hover:text-foreground"
-          >
-            <Paperclip className="h-5 w-5" />
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            className="h-9 w-9 text-muted-foreground hover:text-foreground"
-          >
-            <Camera className="h-5 w-5" />
-          </Button>
-        </div>
 
         {/* Input */}
         <Input
