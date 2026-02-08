@@ -73,7 +73,7 @@ Analyze the {{user_goal}}. Generate 3 distinct "Refined Activities" that the use
 Provide valid JSON with a list of 3 options.
 {
     "user_original_goal": "{{user_goal}}",
-    "rationale": "String 1-2 sentences",
+    "rationale": "String (Max 2 lines, approx 20-30 words). Explain WHY these 3 options were chosen based on the user's goal.",
     "options": [
     {
         "activity_name": "String (Catchy Title)",

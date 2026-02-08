@@ -31,6 +31,7 @@ export function CoachCreator() {
   const [directions, setDirections] = useState<CoachDirection[]>([]);
   const [personas, setPersonas] = useState<CoachPersona[]>([]);
   const [suggestedVitals, setSuggestedVitals] = useState<VitalSign[]>([]);
+  const [directionsRationale, setDirectionsRationale] = useState<string>("");
   const [inspirationGoals, setInspirationGoals] = useState<string[]>([]);
   const [isInspirationsLoading, setIsInspirationsLoading] = useState(false);
   const { toast } = useToast();
@@ -120,6 +121,7 @@ export function CoachCreator() {
       }));
 
       setDirections(options);
+      setDirectionsRationale(data.ui_data.rationale);
       setConfig((prev) => ({ ...prev, goal }));
       setStep("select-direction");
 
@@ -449,6 +451,7 @@ User Goal: ${config.goal}`;
   const handleStartOver = useCallback(() => {
     setStep("welcome");
     setConfig(initialConfig);
+    setDirectionsRationale("");
   }, []);
 
   if (isAuthLoading) {
@@ -485,6 +488,7 @@ User Goal: ${config.goal}`;
               key="direction"
               goal={config.goal}
               directions={directions}
+              rationale={directionsRationale}
               isLoading={isLoading}
               onRegenerate={handleRegenerate}
               onSelect={handleDirectionSelect}
