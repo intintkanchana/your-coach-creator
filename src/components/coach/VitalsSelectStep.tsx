@@ -273,16 +273,6 @@ export function VitalsSelectStep({ suggestedVitals, isLoading, onSelect, onBack,
           </CollapsibleContent>
         </Collapsible>
       </motion.div>
-
-      <motion.p
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.8 }}
-        className="text-sm text-muted-foreground text-center mt-6 max-w-sm"
-      >
-        Don't overthink it! You can always add or remove these later based on what feels helpful.
-      </motion.p>
-
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
