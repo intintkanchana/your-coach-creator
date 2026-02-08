@@ -133,56 +133,35 @@ Valid JSON only.
   },
 
   analyzeActivityLog: async (coach: any, logData: any, userId: number) => {
-    // 1. Save individual tracking values
-    const insertValue = db.prepare(`
-      INSERT INTO tracking_values (coach_id, user_id, tracking_id, tracking_key, value)
-      VALUES (@coach_id, @user_id, @tracking_id, @tracking_key, @value)
-    `);
-
-    const saveTransaction = db.transaction((data) => {
-      for (const [key, value] of Object.entries(data)) {
-        let trackingId: number | null = null;
-        // Check if key is a number (tracking ID)
-        if (!isNaN(Number(key))) {
-          trackingId = Number(key);
-        }
-
-        // Find name if possible for cleaner key, or just use the key
-        let trackingKey = key;
-        if (trackingId && coach.trackings) {
-            const t = coach.trackings.find((tr: any) => tr.id === trackingId);
-            if (t) trackingKey = t.name;
-        }
-
-        insertValue.run({
-          coach_id: coach.id,
-          user_id: userId,
-          tracking_id: trackingId,
-          tracking_key: trackingKey,
-          value: String(value)
-        });
-      }
-    });
-
-    try {
-        saveTransaction(logData);
-    } catch (e) {
-        console.error("Failed to save tracking values", e);
-    }
-
-    // 2. Fetch History
+    // 2. Fetch History from recent logs
     const historyStmt = db.prepare(`
-        SELECT tracking_key, value, created_at
-        FROM tracking_values
+        SELECT data, created_at
+        FROM activity_logs
         WHERE coach_id = ? AND user_id = ?
         ORDER BY created_at ASC
-        LIMIT 50
+        LIMIT 10
     `);
     const historyRows = historyStmt.all(coach.id, userId) as any[];
     
-    const historyText = historyRows.map(r => 
-        `[${new Date(r.created_at).toLocaleDateString()}] ${r.tracking_key}: ${r.value}`
-    ).join('\n');
+    // Format history for AI context
+    const historyText = historyRows.map(r => {
+        try {
+            const data = JSON.parse(r.data);
+            const dataItems = Object.entries(data).map(([key, value]) => {
+                // Try to resolve tracking name if possible for cleaner key
+                let trackingKey = key;
+                if (!isNaN(Number(key)) && coach.trackings) {
+                    const trackingId = Number(key);
+                    const t = coach.trackings.find((tr: any) => tr.id === trackingId);
+                    if (t) trackingKey = t.name;
+                }
+                return `${trackingKey}: ${value}`;
+            }).join(', ');
+            return `[${new Date(r.created_at).toLocaleDateString()}] ${dataItems}`;
+        } catch (e) {
+            return '';
+        }
+    }).filter(text => text).join('\n');
 
     const vitalSignsSchema = coach.trackings ? coach.trackings.map((t: any) => `${t.name} (${t.type})`) : ["General Feedback"];
     const userLogText = JSON.stringify(logData);
