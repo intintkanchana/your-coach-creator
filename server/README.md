@@ -1,86 +1,40 @@
-# Life Coach AI Application
+# Life Coach API
 
-An AI-powered Life Coach application that helps users achieve their goals through personalized coaching conversations.
-
-## Project Structure
-
-- `src/`: Backend API (Fastify + TypeScript)
-- `frontend/`: Frontend Application (Next.js + React + UI5 Web Components)
+This directory contains the backend API for the Your Coach Creator application. It is built with Fastify, TypeScript, and SQLite, and integrates with Google's Gemini AI.
 
 ## Prerequisites
 
-- Node.js (v18 or higher recommended)
-- `pnpm` (recommended) or `npm`
+- Node.js (v18+)
+- `npm`
 
-## Getting Started
+## Setup
 
-### 1. Backend Setup
-
-The backend handles the API logic, database (SQLite), and AI integration.
-
-1.  Navigate to the root directory.
-2.  Install dependencies:
+1.  **Install Dependencies**
     ```bash
-    pnpm install
-    # or
     npm install
     ```
-3.  Set up environment variables:
-    - Create a `.env` file in the root directory.
-    - Add the necessary keys (e.g., `GOOGLE_API_KEY`, `PORT`, `GOOGLE_CLIENT_ID` for auth).
-4.  Run the development server:
+
+2.  **Environment Configuration**
+    Create a `.env` file in this directory based on `.env.example`.
+    Required keys:
+    - `GOOGLE_API_KEY`: API key for Gemini models.
+    - `PORT`: Server port (default: 4000).
+    - `GOOGLE_CLIENT_ID`: For Google OAuth.
+
+3.  **Run Development Server**
     ```bash
-    pnpm run dev
-    # or
     npm run dev
     ```
-    The server will start at `http://localhost:4000` (default).
+    The server will start at `http://localhost:4000`.
 
-### 2. Frontend Setup
+## API Documentation
 
-The frontend provides the user interface for chatting with the coach.
-
-1.  Navigate to the `frontend` directory:
-    ```bash
-    cd frontend
-    ```
-2.  Install dependencies:
-    ```bash
-    pnpm install
-    # or
-    npm install
-    ```
-3.  Run the development server:
-    ```bash
-    pnpm run dev
-    # or
-    npm run dev
-    ```
-    The application will be accessible at `http://localhost:3000`.
-
-## API Documentation (Swagger)
-
-The backend provides interactive API documentation using Swagger UI.
-
-Once the backend server is running, you can access the documentation at:
-
-**URL:** `http://localhost:4000/documentation`
-
-(Replace `4000` with your configured port if different)
-
-This interface allows you to:
-- View all available API endpoints (Auth, Coaches, Chat).
-- Test endpoints directly from the browser.
-- See request/response schemas.
-
-## Key Features
-
-- **Google Authentication**: Secure login flow.
-- **Coach Creation Agent**: Interactive chat flow to create custom coach personas.
-- **Real-time Chat**: Chat with your AI coach.
-- **Coach Management**: Switch between multiple coaches.
+Interactive API documentation (Swagger UI) is available at:
+`http://localhost:4000/documentation`
 
 ## Technologies
 
-- **Backend**: Fastify, TypeScript, SQLite, Google Gemini AI SDK.
-- **Frontend**: Next.js, React, UI5 Web Components.
+- **Framework**: Fastify
+- **Language**: TypeScript
+- **Database**: SQLite (via `better-sqlite3`)
+- **AI**: Google Generative AI SDK (`@google/genai`)
