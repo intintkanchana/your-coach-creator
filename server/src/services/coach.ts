@@ -105,11 +105,13 @@ export const coachService = {
   deleteCoach: (id: number, userId: number) => {
     const deleteMessages = db.prepare('DELETE FROM messages WHERE coach_id = ?');
     const deleteCoach = db.prepare('DELETE FROM coaches WHERE id = ? AND user_id = ?');
+    const deleteActivityLogs = db.prepare('DELETE FROM activity_logs WHERE coach_id = ?');
     
     const transaction = db.transaction(() => {
       const deleteTrackings = db.prepare('DELETE FROM trackings WHERE coach_id = ?');
       deleteMessages.run(id);
       deleteTrackings.run(id);
+      deleteActivityLogs.run(id);
       return deleteCoach.run(id, userId);
     });
 
