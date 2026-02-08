@@ -6,9 +6,10 @@ import { Send } from "lucide-react";
 interface ChatInputProps {
   onSend: (message: string) => void;
   disabled?: boolean;
+  onHeightChange?: (height: number) => void;
 }
 
-export function ChatInput({ onSend, disabled }: ChatInputProps) {
+export function ChatInput({ onSend, disabled, onHeightChange }: ChatInputProps) {
   const [message, setMessage] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -18,9 +19,14 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
       textareaRef.current.style.height = "auto";
       // Set height based on scrollHeight, capped at max-height via CSS or logic
       const scrollHeight = textareaRef.current.scrollHeight;
-      textareaRef.current.style.height = `${Math.min(scrollHeight, 150)}px`;
+      const newHeight = Math.min(scrollHeight, 150);
+      textareaRef.current.style.height = `${newHeight}px`;
+
+      if (onHeightChange) {
+        onHeightChange(newHeight);
+      }
     }
-  }, [message]);
+  }, [message, onHeightChange]);
 
   const handleSubmit = (e?: React.FormEvent) => {
     e?.preventDefault();

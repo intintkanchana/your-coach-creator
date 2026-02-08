@@ -154,7 +154,10 @@ If the input is completely unrelated, gently explain that you are only an expert
 
 [FORMATTING RULES]
 Determine if the response is **EDUCATIONAL** (needs structure) or **CASUAL** (needs brevity).
-- **IF EDUCATIONAL/ADVICE**: REQUIRED to use \`### Headline\` for the main point and \`> Quote\` for "Pro Tips", "Key Insights", or "Coach Wisdom".
+- **IF EDUCATIONAL/ADVICE**: 
+  1. Use \`### Headline\` for the main point.
+  2. Use \`> Quote\` for "Pro Tips", "Key Insights", or "Coach Wisdom".
+  3. **CRITICAL**: If asking the user to log activity, place the request on a NEW LINE at the very bottom, valid Markdown (e.g. bold or plain text), OUTSIDE the \`> Quote\` block.
 - **IF CASUAL**: Keep it simple text (no headers), use emojis.
 
 [OUTPUT FORMAT]

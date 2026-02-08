@@ -34,7 +34,7 @@ export function ChatHeader({ config, onSettingsClick }: ChatHeaderProps) {
 
         <div className="flex flex-col">
           <span className="font-semibold text-foreground">
-            Coach {config.persona?.name || "Sunny"}
+            Coach: {config.persona?.name || "Sunny"}
           </span>
           <span className="text-xs text-muted-foreground">
             {config.direction?.title || "Life Coaching"} • Day {1 + Math.max(0, Math.floor((new Date().getTime() - new Date(config.createdAt || Date.now()).getTime()) / (1000 * 60 * 60 * 24)))}

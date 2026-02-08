@@ -77,13 +77,16 @@ export default function CoachChat() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = useCallback(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, []);
 
   useEffect(() => {
     // Immediate scroll on mount/updates to prevent jump
-    messagesEndRef.current?.scrollIntoView({ block: "nearest" });
-  }, [messages, quickActions]);
+    scrollToBottom();
+    // Double check scroll after layout animations (Framer Motion)
+    const timeout = setTimeout(scrollToBottom, 100);
+    return () => clearTimeout(timeout);
+  }, [messages, quickActions, isTyping, scrollToBottom]);
 
   // Load chat history
   useEffect(() => {
@@ -633,6 +636,8 @@ export default function CoachChat() {
     }
   };
 
+  const [inputHeight, setInputHeight] = useState(60); // Default height
+
   if (isLoading || !config) {
     return (
       <div className="h-[100dvh] bg-background flex items-center justify-center">
@@ -645,11 +650,11 @@ export default function CoachChat() {
   }
 
   return (
-    <div className="h-[100dvh] bg-background flex flex-col overflow-hidden">
+    <div className="fixed inset-0 bg-background flex flex-col overflow-hidden">
       <ChatHeader config={config} onSettingsClick={() => setSettingsOpen(true)} />
 
       {/* Chat messages */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4 scroll-smooth">
+      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4 min-h-0 overscroll-y-contain touch-pan-y">
         <div className="max-w-3xl mx-auto space-y-4">
           <AnimatePresence mode="popLayout">
             {(() => {
@@ -702,8 +707,10 @@ export default function CoachChat() {
         </div>
       </div>
 
-      {/* Input */}
-      <ChatInput onSend={handleSendMessage} />
+      {/* Input - In Flow, not fixed */}
+      <div className="z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <ChatInput onSend={handleSendMessage} onHeightChange={setInputHeight} />
+      </div>
 
       {/* Settings sheet */}
       <SettingsSheet
