@@ -49,8 +49,6 @@ export function VitalsSelectStep({ suggestedVitals, isLoading, onSelect, onBack,
         return { icon: "🎚️", label: "Slider" };
       case "text":
         return { icon: "🔡", label: "Text" };
-      case "photo":
-        return { icon: "📷", label: "Photo" };
       case "boolean":
         return { icon: "☑️", label: "Boolean" };
       default:

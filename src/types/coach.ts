@@ -12,7 +12,7 @@ export interface CoachPersona {
   emoji: string;
 }
 
-export type VitalSignType = 'number' | 'slider' | 'text' | 'photo' | 'boolean';
+export type VitalSignType = 'number' | 'slider' | 'text' | 'boolean';
 
 export interface VitalSign {
   id: string;
