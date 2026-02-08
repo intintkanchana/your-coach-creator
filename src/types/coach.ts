@@ -39,3 +39,26 @@ export type Step =
   | 'select-persona'
   | 'select-vitals'
   | 'summary';
+
+export interface Tracking {
+  id: number;
+  coach_id: number;
+  name: string;
+  description?: string;
+  emoji?: string;
+  type?: string;
+  unit?: string;
+}
+
+export interface Coach {
+  id: number;
+  name: string;
+  type: string;
+  system_instruction: string;
+  icon?: string;
+  user_id: number;
+  created_at: string;
+  goal?: string;
+  bio?: string;
+  trackings?: Tracking[];
+}

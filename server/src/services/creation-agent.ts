@@ -148,30 +148,44 @@ Valid JSON only.
         systemRole = `
 [SYSTEM ROLE]
 You are the "Lab Technician" of the Universal Life Coach. Your job is to design the data collection form for a specific habit experiment.
+
 [TASK]
-Analyze the ${activity} and ${description}. Define ${limit} distinct "Vital Signs" (metrics) to track its progress.
-You must balance **Quantitative** (hard data) and **Qualitative** (feeling/vibe) metrics.
+Analyze the ${activity} and ${description}.
+Define ${limit} distinct "Vital Signs" (metrics) to track its progress.
+
+[LOGIC: DATA TYPE SELECTION]
+Determine the nature of the activity to select the right inputs:
+1. **Performance Activities** (e.g., Running, Lifting, Finance, Coding):
+   - **Primary Metric:** MUST be a 'number' (e.g., Time, Distance, Weight, Lines of Code).
+   - **Secondary:** Use boolea' for binary facts (e.g., "Warmup done?", "Caffeine used?").
+   - **Tertiary:** Use 'slider_1_5' only for effort/pain.
+2. **Experience Activities** (e.g., Meditation, Journaling, Socializing):
+   - **Primary Metric:** Can be 'slider_1_5' (Focus, Mood) or 'number' (Duration).
+   - **Secondary:** Use 'text' for qualitative notes.
+
 [CRITERIA FOR VITAL SIGNS]
-1. **Relationship:** Criteria must be strongly related to the activity.
+1. **Directness:** The first metric must measure the *result* of the activity, not just the feeling.
 2. **Low Friction:** Data entry must take less than 30 seconds.
-3. **Diverse Inputs:** Use sliders, text, or boolean where appropriate.
+3. **Diverse Inputs:** Do NOT rely solely on sliders. Use 'number' for hard data and 'boolean' for quick checks.
 4. **Non-Judgmental:** The label should sound like an observation, not a test.
-${(userMessage.limit && userMessage.limit > 0) ? `5. **Recommendation:** Do NOT recommend any items. Set \`is_recommended: false\` for ALL items.` : `5. **Recommendation:** Select exactly 3 "Must Track" items that are most critical for this activity. Mark them as \`is_recommended: true\`.`}
+${(userMessage.limit && userMessage.limit > 0) ? `5. **Recommendation:** Do NOT recommend any items. Set \`is_recommended: false\` for ALL items.` : `5. **Recommendation:** Select exactly 3 "Must Track" items that are most critical. Mark them as \`is_recommended: true\`.`}
+
 [INPUT TYPES ALLOWED]
-- "number"
-- "slider_1_5"
-- "text"
-- "boolean"
+- "number" (Use for measurable units: seconds, meters, reps, pages)
+- "slider_1_5" (Use for subjective intensity: 1=Easy, 5=Hard)
+- "text" (Use for context: "Surface type", "Location")
+- "boolean" (Use for binary states: "Yes/No")
+
 [OUTPUT FORMAT]
 Valid JSON only.
 {
     "selected_activity": "${activity}",
     "vital_signs": [
     {
-        "label": "String (Short Title)",
+        "label": "String (Short Title, max 3 words)",
         "input_type": "number | slider_1_5 | text | boolean",
-        "unit": "String or null",
-        "rationale": "String (Max 15 words, very concise)",
+        "unit": "String (e.g., 'seconds', 'kg', 'pages') or null",
+        "rationale": "String (Why this specific metric matters)",
         "emoji": "String (Single specific emoji)",
         "is_recommended": "Boolean"
     }

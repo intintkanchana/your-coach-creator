@@ -275,13 +275,6 @@ const CoachList = () => {
                           onClick={(e) => e.stopPropagation()}
                         >
                           <button
-                            onClick={() => handleEditSettings(coach.id)}
-                            className="flex items-center gap-3 w-full px-3 py-2 text-sm text-foreground hover:bg-muted rounded-md transition-colors"
-                          >
-                            <Settings className="w-4 h-4" />
-                            Edit Settings
-                          </button>
-                          <button
                             onClick={() => handleRetireCoach(coach)}
                             className="flex items-center gap-3 w-full px-3 py-2 text-sm text-destructive hover:bg-destructive/10 rounded-md transition-colors"
                           >

@@ -63,7 +63,6 @@ export function PersonaSelectStep({ personas, isLoading, onSelect, onBack }: Per
         className="text-muted-foreground text-center mb-8 max-w-md"
       >
         How would you like me to support you? This affects how encouragement and feedback feel.
-        You can always change this later!
       </motion.p>
 
       <AnimatePresence mode="wait">

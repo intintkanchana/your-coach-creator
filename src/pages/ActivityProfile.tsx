@@ -11,6 +11,12 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { API_BASE_URL } from "@/config";
+import { Coach } from "@/types/coach";
+import { ColumnDef } from "@tanstack/react-table";
+import { DataTable } from "@/components/ui/data-table";
+import { ArrowUpDown } from "lucide-react";
+import { useMemo } from "react";
+import { format } from "date-fns";
 
 interface ActivityLog {
     id: number;
@@ -23,6 +29,33 @@ export default function ActivityProfile() {
     const { coachId } = useParams();
     const navigate = useNavigate();
     const [logs, setLogs] = useState<ActivityLog[]>([]);
+
+    // Helper functions moved out of useMemo to be accessible inside and outside
+    const getTrackingValue = (jsonStr: string, trackingId: string) => {
+        try {
+            const data = JSON.parse(jsonStr);
+            // Try to parse number for correct sorting if possible
+            const val = data[trackingId];
+            if (val === undefined || val === null) return "-";
+            return val;
+        } catch (e) {
+            return "-";
+        }
+    };
+
+    const parseFeedback = (jsonStr: string | null) => {
+        if (!jsonStr) return <span className="italic text-muted-foreground">No feedback</span>;
+        try {
+            const feedback = JSON.parse(jsonStr);
+            if (feedback.analysis && feedback.analysis.summary_impression) {
+                return feedback.analysis.summary_impression;
+            }
+            return JSON.stringify(feedback).slice(0, 50) + "...";
+        } catch (e) {
+            return <span className="text-muted-foreground">Analysis error</span>;
+        }
+    };
+    const [coach, setCoach] = useState<Coach | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -33,18 +66,22 @@ export default function ActivityProfile() {
                 const token = localStorage.getItem("sessionToken");
                 if (!token) throw new Error("No session token");
 
-                const res = await fetch(`${API_BASE_URL}/api/chat/logs/${coachId}`, {
-                    headers: {
-                        "Authorization": `Bearer ${token}`
-                    }
-                });
+                const [logsRes, coachRes] = await Promise.all([
+                    fetch(`${API_BASE_URL}/api/chat/logs/${coachId}`, {
+                        headers: { "Authorization": `Bearer ${token}` }
+                    }),
+                    fetch(`${API_BASE_URL}/api/coaches/${coachId}`, {
+                        headers: { "Authorization": `Bearer ${token}` }
+                    })
+                ]);
 
-                if (!res.ok) {
-                    throw new Error("Failed to fetch logs");
-                }
+                if (!logsRes.ok || !coachRes.ok) throw new Error("Failed to fetch data");
 
-                const data = await res.json();
-                setLogs(data);
+                const logsData = await logsRes.json();
+                const coachData = await coachRes.json();
+
+                setLogs(logsData);
+                setCoach(coachData);
             } catch (err) {
                 console.error(err);
                 setError("Failed to load activity profile.");
@@ -56,37 +93,66 @@ export default function ActivityProfile() {
         fetchLogs();
     }, [coachId]);
 
-    const parseData = (jsonStr: string) => {
-        try {
-            const data = JSON.parse(jsonStr);
-            return Object.entries(data).map(([key, value]) => (
-                <div key={key} className="text-sm">
-                    <span className="font-medium capitalize">{key.replace(/-/g, ' ')}:</span> {String(value)}
-                </div>
-            ));
-        } catch (e) {
-            return <span className="text-muted-foreground">Invalid data</span>;
-        }
-    };
+    const columns = useMemo<ColumnDef<ActivityLog>[]>(() => {
+        const baseColumns: ColumnDef<ActivityLog>[] = [
+            {
+                accessorKey: "created_at",
+                header: ({ column }) => {
+                    return (
+                        <Button
+                            variant="ghost"
+                            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+                        >
+                            Date
+                            <ArrowUpDown className="ml-2 h-4 w-4" />
+                        </Button>
+                    );
+                },
+                cell: ({ row }) => {
+                    return (
+                        <div className="whitespace-nowrap">
+                            {format(new Date(row.getValue("created_at")), "MMM d, yyyy • h:mm a")}
+                        </div>
+                    );
+                },
+            },
+        ];
 
-    const parseFeedback = (jsonStr: string | null) => {
-        if (!jsonStr) return <span className="italic text-muted-foreground">No feedback</span>;
-        try {
-            const feedback = JSON.parse(jsonStr);
-            // Check if it matches our new structure { status, analysis: { ... } }
-            if (feedback.analysis && feedback.analysis.summary_impression) {
-                return feedback.analysis.summary_impression;
-            }
-            // Fallback for older format if any
-            return JSON.stringify(feedback).slice(0, 50) + "...";
-        } catch (e) {
-            return <span className="text-muted-foreground">Analysis error</span>;
+        if (coach?.trackings) {
+            coach.trackings.forEach(tracking => {
+                baseColumns.push({
+                    id: tracking.id.toString(),
+                    header: ({ column }) => {
+                        return (
+                            <Button
+                                variant="ghost"
+                                onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+                            >
+                                {tracking.name}
+                                <ArrowUpDown className="ml-2 h-4 w-4" />
+                            </Button>
+                        );
+                    },
+                    accessorFn: (row) => getTrackingValue(row.data, tracking.id.toString()),
+                    cell: ({ row }) => {
+                        return <div className="pl-4">{getTrackingValue(row.original.data, tracking.id.toString())}</div>;
+                    }
+                });
+            });
         }
-    };
+
+        baseColumns.push({
+            accessorKey: "feedback",
+            header: "Coach Feedback",
+            cell: ({ row }) => <div className="min-w-[300px]">{parseFeedback(row.getValue("feedback"))}</div>,
+        });
+
+        return baseColumns;
+    }, [coach]);
 
     return (
         <div className="min-h-screen bg-background p-4 sm:p-8">
-            <div className="max-w-4xl mx-auto space-y-6">
+            <div className="max-w-7xl mx-auto space-y-6">
                 {/* Header */}
                 <div className="flex items-center gap-4">
                     <Button
@@ -122,36 +188,7 @@ export default function ActivityProfile() {
                         </div>
                     ) : (
                         <div className="overflow-x-auto">
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead className="w-[150px]">Date</TableHead>
-                                        <TableHead className="w-[300px]">Session Data</TableHead>
-                                        <TableHead>Coach Feedback</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {logs.map((log) => (
-                                        <TableRow key={log.id}>
-                                            <TableCell className="font-medium align-top py-4">
-                                                {new Date(log.created_at).toLocaleDateString(undefined, {
-                                                    year: 'numeric',
-                                                    month: 'short',
-                                                    day: 'numeric',
-                                                    hour: '2-digit',
-                                                    minute: '2-digit'
-                                                })}
-                                            </TableCell>
-                                            <TableCell className="align-top py-4 space-y-1">
-                                                {parseData(log.data)}
-                                            </TableCell>
-                                            <TableCell className="align-top py-4 text-muted-foreground">
-                                                {parseFeedback(log.feedback)}
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
+                            <DataTable columns={columns} data={logs} />
                         </div>
                     )}
                 </div>

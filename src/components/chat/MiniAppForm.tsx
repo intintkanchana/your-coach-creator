@@ -137,10 +137,15 @@ export function MiniAppForm({ fields, submitted, submittedData, onSubmit, disabl
                   onChange={(e) =>
                     setFormData((prev) => ({
                       ...prev,
-                      [field.id]: parseFloat(e.target.value) || 0
+                      [field.id]: e.target.value === "" ? "" : parseFloat(e.target.value)
                     }))
                   }
                   className="w-24"
+                  onBlur={(e) => {
+                    if (e.target.value === "") {
+                      setFormData((prev) => ({ ...prev, [field.id]: 0 }));
+                    }
+                  }}
                 />
                 {field.unit && (
                   <span className="text-sm text-muted-foreground">{field.unit}</span>

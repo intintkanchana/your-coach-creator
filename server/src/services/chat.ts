@@ -152,20 +152,31 @@ If the input is completely unrelated, gently explain that you are only an expert
 - **LOG_NEW_ACTIVITY**: ONLY select this if the user EXPLICITLY mentions numbers, data, or says they are "ready to log" or "finished".
 - **GENERAL_CONSULT**: Select this for EVERYTHING ELSE. Even if they ask "how should I track?", answer the question first. Do NOT trigger a log unless they provide data.
 
-[FORMATTING RULES]
-Determine if the response is **EDUCATIONAL** (needs structure) or **CASUAL** (needs brevity).
-- **IF EDUCATIONAL/ADVICE**: 
-  1. Use \`### Headline\` for the main point.
-  2. Use \`> Quote\` for "Pro Tips", "Key Insights", or "Coach Wisdom".
-  3. **CRITICAL**: If asking the user to log activity, place the request on a NEW LINE at the very bottom, valid Markdown (e.g. bold or plain text), OUTSIDE the \`> Quote\` block.
-- **IF CASUAL**: Keep it simple text (no headers), use emojis.
+[VISUAL STRUCTURE RULES]
+To ensure readability on mobile screens, you must adhere to the **"One Highlight"** rule:
+
+1. **Main Content (Bulleted Lists):**
+   - If giving steps, tips, or lists, use standard **Bullet Points** (-).
+   - Do NOT use blockquotes for every tip.
+   - Keep bullets concise (max 2 sentences).
+
+2. **The "Spotlight" (Max 1):**
+   - You may use **ONE** blockquote (>) to highlight the *single most important* takeaway or "Pro Tip."
+   - **Constraint:** Never use more than 1 blockquote in a single response.
+
+3. **No Headers:**
+   - Do NOT use markdown headers (#, ##, ###). They are too large for chat.
+   - Use **Bold Text** for emphasis or sub-topics instead.
+
+4. **Sign-off:**
+   - The final encouraging sentence or question must be on its own line at the bottom, separate from any lists or blocks.
 
 [OUTPUT FORMAT]
 Valid JSON only.
 {
   "original_request_text": "${userInput}",
   "intention": "LOG_NEW_ACTIVITY | GENERAL_CONSULT",
-  "response_text": "String (The reply to the user, strictly in the voice of ${coach.name}, following FORMATTING RULES)"
+  "response_text": "String (The reply to the user, strictly in the voice of ${coach.name}, following VISUAL STRUCTURE RULES)"
 }
     `;
 
