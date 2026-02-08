@@ -1,6 +1,6 @@
 import { geminiService } from './gemini';
 
-export type CreationStep = 
+export type CreationStep =
   | '1.1_SCOPE_ACTIVITY'
   | '1.2_CREATE_PERSONA'
   | '2.1_SUGGEST_VITAL_SIGNS'
@@ -31,9 +31,9 @@ export const creationAgentService = {
   updateSession(userId: number, context: AgentContext) {
     sessions[String(userId)] = context;
   },
-  
+
   clearSession(userId: number) {
-      delete sessions[String(userId)];
+    delete sessions[String(userId)];
   },
 
   async handleMessage(userId: number, userMessage: any, shouldReset: boolean = false) {
@@ -43,7 +43,7 @@ export const creationAgentService = {
     const context = this.getOrCreateSession(userId);
     let prompt = '';
     let systemRole = '';
-    
+
     // Logic to update context based on PREVIOUS step's output if needed
     // For simplicity, we assume the frontend sends the *selection* from the previous step 
     // effectively as the "userMessage" for the current step logic, 
@@ -56,32 +56,44 @@ export const creationAgentService = {
         // Actually, the flow is: 
         // 1. User sends text -> API calls Agent -> Agent generates Step 1.1 JSON options.
         // 2. User selects option -> API calls Agent (with selection) -> Agent generates Step 1.2 JSON.
-        
+
         // So for 1.1, we take the raw text as user_goal.
-        
+
         systemRole = `
+[INPUT CONTEXT]
+- user goal: {{user_goal}}
+
 [SYSTEM ROLE]
-You are the "Scope Shrinker," a strategist who breaks broad, overwhelming goals into fun, measurable, bite-sized experiments (Tracer Bullets).
+You are the "Scope Shrinker," a strategist who optimizes goals into fun, measurable experiments ("Tracer Bullets").
+
 [TASK]
-Analyze the {{user_goal}}. Generate 3 distinct "Refined Activities" that the user could start today.
+Analyze the {{user_goal}}. Determine if it is **Broad** (e.g., "Get fit") or **Specific** (e.g., "Do a front split").
+Generate 3 distinct "Refined Activities" based on this assessment.
+
+[LOGIC FLOW]
+1. **IF BROAD:** Break it down into 3 completely different small actions (e.g., "Drink Water," "10m Walk," "Sleep Early").
+2. **IF SPECIFIC:**
+   - **Option 1 MUST be the direct goal itself** (optimized for tracking).
+   - Options 2 & 3 should be *variations* of that specific goal (e.g., different intensity, method, or schedule).
+
 [CRITERIA FOR OPTIONS]
-1. **Distinct Angles:** Don't just give 3 versions of the same thing. Offer variety (e.g., one physical, one mental, one creative). This is strictly depending on the intended activity.
-2. **Measurable (Vital Signs Ready):** Ensure each option has obvious potential for data tracking (e.g., numbers, photos, duration).
-3. **Low Friction:** The activity should feel exciting and small, not like "work."
-4. **Visual:** Include a relevant emoji for each option.
+1. **Measurable (Vital Signs Ready):** Ensure each option has obvious potential for data tracking (numbers, binary yes/no, duration).
+2. **Low Friction:** The activity should feel exciting and actionable, not overwhelming.
+3. **Visual:** Include a relevant emoji for each option.
+
 [OUTPUT FORMAT]
-Provide valid JSON with a list of 3 options.
+Provide valid JSON only.
 {
-    "user_original_goal": "{{user_goal}}",
-    "rationale": "String (Max 2 lines, approx 20-30 words). Explain WHY these 3 options were chosen based on the user's goal.",
-    "options": [
+  "user_original_goal": "{{user_goal}}",
+  "rationale": "String (Natural explanation of the strategy behind these 3 choices. Focus on how they help the user start *now*. DO NOT use the words 'Broad' or 'Specific'. Max 2 sentences and less than 30 words).",
+  "options": [
     {
-        "activity_name": "String (Catchy Title)",
-        "description": "String (One sentence pitch)",
-        "potential_vital_sign": "String (Example of what they'd measure)",
-        "emoji": "String (Single emoji char)"
+      "activity_name": "String (Catchy Title)",
+      "description": "String (One sentence pitch - how to do it)",
+      "potential_vital_sign": "String (Example: 'Gap distance (cm)' or 'Minutes run')",
+      "emoji": "String (Single emoji char)"
     }
-    ]
+  ]
 }`;
         prompt = `[INPUT CONTEXT]\n- user goal: ${userMessage}`;
         break;
@@ -121,12 +133,12 @@ Valid JSON only.
         // User selected persona vibes (optional context) or just confirmed the persona
         // Input: { coach_name, coach_bio, selected_personality } (maybe)
         // We rely on stored context mostly.
-        
+
         // We need description for the prompt, let's look it up or ask user? 
         // For now, we assume context.data has what we need or we approximate.
         // Actually, we should probably persist the 'options' from 1.1 to find the description.
         // Let's assume we proceed with just the name for simplicity if description missing.
-        
+
         const activity = context.data.selected_activity_name;
         // Mock description or retrieve if we saved it. 
         // To be safe, let's assume the user selection payload might include description if the frontend passed it back.
@@ -170,24 +182,24 @@ Valid JSON only.
 - selected activity name: ${activity}
 - selected activity description: ${description}`;
         break;
-      
+
       // Skipping 2.2 Optional for MVP, going straight to Summary
       case '3.0_SUMMARIZE_COACH':
-         // Inputs needed: coach info, personality, activity, metrics, user goal (new input)
-         // userMessage here should be the "User Personal Goal" (Page 3 input)
-         // We need to have gathered previous data in context.data
-         
-         const { 
-             coach_name, 
-             coach_bio, 
-             selected_personality,
-             selected_activity_name, // refined_activity
-             vital_signs // final_vital_signs
-         } = context.data;
-         
-         const userPersonalGoal = userMessage; 
+        // Inputs needed: coach info, personality, activity, metrics, user goal (new input)
+        // userMessage here should be the "User Personal Goal" (Page 3 input)
+        // We need to have gathered previous data in context.data
 
-         systemRole = `
+        const {
+          coach_name,
+          coach_bio,
+          selected_personality,
+          selected_activity_name, // refined_activity
+          vital_signs // final_vital_signs
+        } = context.data;
+
+        const userPersonalGoal = userMessage;
+
+        systemRole = `
 [SYSTEM ROLE]
 You are a "Synthesis Engine." Generate the final "Kickoff Card" for a new habit.
 Adopt the persona of ${coach_name} with the vibe ${selected_personality}.
@@ -204,43 +216,43 @@ Valid JSON only.
     "commitment_motto": "String",
     "first_tiny_step": "String"
 }`;
-         prompt = `[INPUT CONTEXT]
+        prompt = `[INPUT CONTEXT]
 - Coach: ${coach_name} (${coach_bio})
 - Vibe: ${selected_personality}
 - Activity: ${selected_activity_name}
 - Metrics: ${JSON.stringify(vital_signs)}
 - User Goal: ${userPersonalGoal}`;
-         break;
+        break;
     }
 
     // Call Gemini
     const responseText = await geminiService.chat([], prompt, systemRole);
-    
+
     // Try to parse JSON
     let jsonResponse;
     try {
-        // Clean markdown code blocks if present
-        const cleanJson = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
-        jsonResponse = JSON.parse(cleanJson);
+      // Clean markdown code blocks if present
+      const cleanJson = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
+      jsonResponse = JSON.parse(cleanJson);
     } catch (e) {
-        console.error("Failed to parse JSON from agent", responseText);
-        // Fallback or error
-        return { error: "Failed to generate valid plan.", raw: responseText };
+      console.error("Failed to parse JSON from agent", responseText);
+      // Fallback or error
+      return { error: "Failed to generate valid plan.", raw: responseText };
     }
-    
+
     // Return the UI data and metadata
     return {
-        step: context.step,
-        ui_data: jsonResponse
+      step: context.step,
+      ui_data: jsonResponse
     };
   },
 
   // Method to advance step manually after frontend confirmation
   advanceStep(userId: number, nextStep: CreationStep, dataToMerge: any) {
-      const context = this.getOrCreateSession(userId);
-      context.step = nextStep;
-      context.data = { ...context.data, ...dataToMerge };
-      this.updateSession(userId, context);
+    const context = this.getOrCreateSession(userId);
+    context.step = nextStep;
+    context.data = { ...context.data, ...dataToMerge };
+    this.updateSession(userId, context);
   },
 
   async suggestGoals() {
@@ -270,15 +282,15 @@ Example:
     const responseText = await geminiService.chat([], "Generate 4 goal inspirations.", systemRole);
 
     try {
-        const cleanJson = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
-        const goals = JSON.parse(cleanJson);
-        if (Array.isArray(goals)) {
-            return goals;
-        }
-        return [];
+      const cleanJson = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
+      const goals = JSON.parse(cleanJson);
+      if (Array.isArray(goals)) {
+        return goals;
+      }
+      return [];
     } catch (e) {
-        console.error("Failed to parse goals", responseText);
-        return [];
+      console.error("Failed to parse goals", responseText);
+      return [];
     }
   }
 };
