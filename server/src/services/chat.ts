@@ -2,17 +2,15 @@ import db from '../db';
 import { ChatMessage, geminiService } from './gemini';
 
 export const chatService = {
-  getHistory: (coachId: number, userId: number): ChatMessage[] => {
+  getHistory: async (coachId: number, userId: number): Promise<ChatMessage[]> => {
     // Limit history to last 50 messages to avoid huge context? 
     // Or just all for now.
-    const stmt = db.prepare(`
+    const rows = await db.query<{ role: 'user' | 'model'; content: string }>(`
       SELECT role, content 
       FROM messages 
       WHERE coach_id = ? AND user_id = ? 
       ORDER BY timestamp ASC
-    `);
-    
-    const rows = stmt.all(coachId, userId) as { role: 'user' | 'model'; content: string }[];
+    `, [coachId, userId]);
     
     // Map to Gemini format
     return rows.map(r => ({
@@ -21,30 +19,27 @@ export const chatService = {
     }));
   },
 
-  saveMessage: (coachId: number, userId: number, role: 'user' | 'model', content: string) => {
-    const stmt = db.prepare(`
+  saveMessage: async (coachId: number, userId: number, role: 'user' | 'model', content: string) => {
+    await db.run(`
       INSERT INTO messages (coach_id, user_id, role, content)
       VALUES (?, ?, ?, ?)
-    `);
-    stmt.run(coachId, userId, role, content);
+    `, [coachId, userId, role, content]);
   },
 
-  getLastActivityLog: (coachId: number, userId: number) => {
-    const stmt = db.prepare(`
+  getLastActivityLog: async (coachId: number, userId: number) => {
+    return db.get(`
       SELECT * FROM activity_logs
       WHERE coach_id = ? AND user_id = ?
       ORDER BY created_at DESC
       LIMIT 1
-    `);
-    return stmt.get(coachId, userId) as any;
+    `, [coachId, userId]);
   },
 
-  saveActivityLog: (coachId: number, userId: number, data: string, feedback: string) => {
-    const stmt = db.prepare(`
+  saveActivityLog: async (coachId: number, userId: number, data: string, feedback: string) => {
+    await db.run(`
       INSERT INTO activity_logs (coach_id, user_id, data, feedback)
       VALUES (?, ?, ?, ?)
-    `);
-    stmt.run(coachId, userId, data, feedback);
+    `, [coachId, userId, data, feedback]);
   },
 
   generateGreeting: async (coach: any, lastLog: any) => {
@@ -134,14 +129,13 @@ Valid JSON only.
 
   analyzeActivityLog: async (coach: any, logData: any, userId: number) => {
     // 2. Fetch History from recent logs
-    const historyStmt = db.prepare(`
+    const historyRows = await db.query<{ data: string; created_at: string }>(`
         SELECT data, created_at
         FROM activity_logs
         WHERE coach_id = ? AND user_id = ?
         ORDER BY created_at ASC
         LIMIT 10
-    `);
-    const historyRows = historyStmt.all(coach.id, userId) as any[];
+    `, [coach.id, userId]);
     
     // Format history for AI context
     const historyText = historyRows.map(r => {

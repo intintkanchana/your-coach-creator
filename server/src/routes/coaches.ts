@@ -46,7 +46,7 @@ export async function coachRoutes(fastify: FastifyInstance) {
     }
   }, async (request, reply) => {
     const user = request.user!;
-    const coaches = coachService.getCoachesByUser(user.id);
+    const coaches = await coachService.getCoachesByUser(user.id);
     return coaches;
   });
 
@@ -103,7 +103,7 @@ export async function coachRoutes(fastify: FastifyInstance) {
     const user = request.user!;
     const { id } = request.params as { id: number };
 
-    const coach = coachService.getCoachById(id);
+    const coach = await coachService.getCoachById(id);
     
     if (!coach || coach.user_id !== user.id) {
       return reply.status(404).send({ error: 'Coach not found' });
@@ -193,7 +193,7 @@ export async function coachRoutes(fastify: FastifyInstance) {
       return reply.status(400).send({ error: 'Name and Type are required' });
     }
 
-    const coach = coachService.createCoach({
+    const coach = await coachService.createCoach({
       name,
       type,
       system_instruction: context,
@@ -239,12 +239,12 @@ export async function coachRoutes(fastify: FastifyInstance) {
     const { id } = request.params as { id: number };
 
     // Validate if coach exists and belongs to user
-    const coach = coachService.getCoachById(id);
+    const coach = await coachService.getCoachById(id);
     if (!coach || coach.user_id !== user.id) {
       return reply.status(404).send({ error: 'Coach not found' });
     }
 
-    coachService.deleteCoach(id, user.id);
+    await coachService.deleteCoach(id, user.id);
     return { success: true };
   });
 }

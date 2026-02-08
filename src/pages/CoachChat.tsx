@@ -8,6 +8,7 @@ import { QuickActionPills } from "@/components/chat/QuickActionPills";
 import { SettingsSheet } from "@/components/chat/SettingsSheet";
 import { ChatMessage as ChatMessageType, QuickAction, FormField } from "@/types/chat";
 import { CoachConfig } from "@/types/coach";
+import { API_BASE_URL } from "@/config";
 
 // Default config if none provided
 const defaultConfig: CoachConfig = {
@@ -71,7 +72,7 @@ export default function CoachChat() {
           return;
         }
 
-        const response = await fetch(`http://localhost:4000/api/coaches/${coachId}`, {
+        const response = await fetch(`${API_BASE_URL}/api/coaches/${coachId}`, {
           headers: {
             "Authorization": `Bearer ${token}`
           }
@@ -145,7 +146,7 @@ export default function CoachChat() {
     try {
       setIsTyping(true);
       const token = localStorage.getItem("sessionToken");
-      const res = await fetch(`http://localhost:4000/api/chat/greeting`, {
+      const res = await fetch(`${API_BASE_URL}/api/chat/greeting`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -225,7 +226,7 @@ export default function CoachChat() {
 
     try {
       const token = localStorage.getItem("sessionToken");
-      const res = await fetch(`http://localhost:4000/api/chat/classify`, {
+      const res = await fetch(`${API_BASE_URL}/api/chat/classify`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -346,7 +347,7 @@ export default function CoachChat() {
 
     try {
       const token = localStorage.getItem("sessionToken");
-      const res = await fetch(`http://localhost:4000/api/chat/analyze`, {
+      const res = await fetch(`${API_BASE_URL}/api/chat/analyze`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

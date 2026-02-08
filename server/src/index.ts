@@ -65,14 +65,27 @@ fastify.register(creationRoutes);
 const start = async () => {
   try {
     // Initialize DB
-    initDb();
+    console.log('Initializing database...');
+    await initDb();
+    console.log('Database initialized successfully');
     
-    await fastify.listen({ port: Number(CONFIG.PORT), host: '0.0.0.0' });
-    console.log(`Server is running at http://localhost:${CONFIG.PORT}`);
+    const port = Number(CONFIG.PORT) || 3000;
+    const host = '0.0.0.0';
+
+    await fastify.listen({ port, host });
+    console.log(`Server is running at http://${host}:${port}`);
+    console.log(`Environment PORT: ${CONFIG.PORT}`);
   } catch (err) {
     fastify.log.error(err);
+    console.error('Failed to start server:', err);
     process.exit(1);
   }
 };
+
+// Global error handlers
+process.on('unhandledRejection', (err) => {
+  console.error('Unhandled Rejection:', err);
+  process.exit(1);
+});
 
 start();

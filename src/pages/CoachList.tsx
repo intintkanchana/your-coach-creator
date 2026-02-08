@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { AppHeader } from "@/components/common/AppHeader";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/lib/auth-context";
+import { API_BASE_URL } from "@/config";
 import {
   Dialog,
   DialogContent,
@@ -61,7 +62,7 @@ const CoachList = () => {
           return;
         }
 
-        const response = await fetch("http://localhost:4000/api/coaches", {
+        const response = await fetch(`${API_BASE_URL}/api/coaches`, {
           headers: {
             "Authorization": `Bearer ${token}`
           }
@@ -111,7 +112,7 @@ const CoachList = () => {
     setIsDeleting(true);
     try {
       const token = localStorage.getItem("sessionToken");
-      const response = await fetch(`http://localhost:4000/api/coaches/${coachToDelete.id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/coaches/${coachToDelete.id}`, {
         method: "DELETE",
         headers: {
           "Authorization": `Bearer ${token}`

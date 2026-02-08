@@ -53,7 +53,7 @@ export async function authRoutes(fastify: FastifyInstance) {
 
     try {
       const googleUser = await authService.verifyGoogleToken(token);
-      const user = authService.loginUser(googleUser);
+      const user = await authService.loginUser(googleUser);
       return { user, sessionToken: user.session_token };
     } catch (error) {
       request.log.error(error);

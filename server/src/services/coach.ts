@@ -24,7 +24,7 @@ export interface Tracking {
 }
 
 export const coachService = {
-  createCoach: (data: { 
+  createCoach: async (data: { 
     name: string; 
     type: string; 
     system_instruction?: string; 
@@ -39,35 +39,35 @@ export const coachService = {
     const instruction = data.system_instruction || 
       `You are a ${data.type} coach named ${data.name}. Help the user with their goals.`;
 
-    const createCoachTransaction = db.transaction(() => {
-      const stmt = db.prepare(`
-        INSERT INTO coaches (name, type, system_instruction, icon, user_id, goal, bio, vital_signs)
-        VALUES (@name, @type, @system_instruction, @icon, @user_id, @goal, @bio, @vital_signs)
-        RETURNING *
-      `);
-      
+    const coach = await db.transaction(async (tx) => {
       // Ensure vital_signs is stringified if it's an object/array (keeping for backward compat)
       const vitalSignsStr = data.vital_signs ? 
         (typeof data.vital_signs === 'string' ? data.vital_signs : JSON.stringify(data.vital_signs)) 
         : null;
 
-      const coach = stmt.get({ 
+      const newCoach = await tx.get<Coach>(`
+        INSERT INTO coaches (name, type, system_instruction, icon, user_id, goal, bio, vital_signs)
+        VALUES (@name, @type, @system_instruction, @icon, @user_id, @goal, @bio, @vital_signs)
+        RETURNING *
+      `, { 
         ...data, 
         goal: data.goal || null,
         bio: data.bio || null,
         system_instruction: instruction,
         vital_signs: vitalSignsStr
-      }) as Coach;
+      });
+
+      if (!newCoach) {
+          throw new Error('Failed to create coach');
+      }
 
       if (data.trackings && Array.isArray(data.trackings)) {
-        const insertTracking = db.prepare(`
-          INSERT INTO trackings (coach_id, name, description, emoji, type)
-          VALUES (@coach_id, @name, @description, @emoji, @type)
-        `);
-
         for (const t of data.trackings) {
-          insertTracking.run({
-            coach_id: coach.id,
+          await tx.run(`
+            INSERT INTO trackings (coach_id, name, description, emoji, type)
+            VALUES (@coach_id, @name, @description, @emoji, @type)
+          `, {
+            coach_id: newCoach.id,
             name: t.name,
             description: t.description || null,
             emoji: t.emoji || null,
@@ -76,45 +76,36 @@ export const coachService = {
         }
       }
 
-      return coach;
+      return newCoach;
     });
 
-    const coach = createCoachTransaction();
-    
-    // Attach trackings to returned object
+    // Attach trackings to returned object (outside transaction to avoid complex types in tx return if not needed, but safe to do here)
     if (coach) {
-      coach.trackings = db.prepare('SELECT * FROM trackings WHERE coach_id = ?').all(coach.id) as Tracking[];
+      coach.trackings = await db.query<Tracking>('SELECT * FROM trackings WHERE coach_id = ?', [coach.id]);
     }
     
     return coach;
   },
 
-  getCoachesByUser: (userId: number) => {
-    const stmt = db.prepare('SELECT id, name, type, icon FROM coaches WHERE user_id = ?');
-    return stmt.all(userId) as Pick<Coach, 'id' | 'name' | 'type' | 'icon'>[];
+  getCoachesByUser: async (userId: number) => {
+    return db.query<Pick<Coach, 'id' | 'name' | 'type' | 'icon'>>('SELECT id, name, type, icon FROM coaches WHERE user_id = ?', [userId]);
   },
 
-  getCoachById: (id: number) => {
-    const coach = db.prepare('SELECT * FROM coaches WHERE id = ?').get(id) as Coach | undefined;
+  getCoachById: async (id: number) => {
+    const coach = await db.get<Coach>('SELECT * FROM coaches WHERE id = ?', [id]);
     if (coach) {
-      coach.trackings = db.prepare('SELECT * FROM trackings WHERE coach_id = ?').all(id) as Tracking[];
+      coach.trackings = await db.query<Tracking>('SELECT * FROM trackings WHERE coach_id = ?', [id]);
     }
     return coach;
   },
 
-  deleteCoach: (id: number, userId: number) => {
-    const deleteMessages = db.prepare('DELETE FROM messages WHERE coach_id = ?');
-    const deleteCoach = db.prepare('DELETE FROM coaches WHERE id = ? AND user_id = ?');
-    const deleteActivityLogs = db.prepare('DELETE FROM activity_logs WHERE coach_id = ?');
-    
-    const transaction = db.transaction(() => {
-      const deleteTrackings = db.prepare('DELETE FROM trackings WHERE coach_id = ?');
-      deleteMessages.run(id);
-      deleteTrackings.run(id);
-      deleteActivityLogs.run(id);
-      return deleteCoach.run(id, userId);
+  deleteCoach: async (id: number, userId: number) => {
+    return db.transaction(async (tx) => {
+       await tx.run('DELETE FROM messages WHERE coach_id = ?', [id]);
+       await tx.run('DELETE FROM trackings WHERE coach_id = ?', [id]);
+       await tx.run('DELETE FROM activity_logs WHERE coach_id = ?', [id]);
+       const result = await tx.run('DELETE FROM coaches WHERE id = ? AND user_id = ?', [id, userId]);
+       return result;
     });
-
-    return transaction();
   }
 };

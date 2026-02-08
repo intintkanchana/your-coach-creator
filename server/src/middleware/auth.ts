@@ -22,7 +22,7 @@ export const requireAuth = async (request: FastifyRequest, reply: FastifyReply) 
 
   // Expect "Bearer <token>"
   const token = authHeader.replace('Bearer ', '');
-  const user = authService.getUserByToken(token);
+  const user = await authService.getUserByToken(token);
 
   if (!user) {
     return reply.status(401).send({ error: 'Unauthorized: Invalid token' });

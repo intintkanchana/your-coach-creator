@@ -145,7 +145,7 @@ export async function creationRoutes(fastify: FastifyInstance) {
 Bio: ${coach_bio}.
 Your goal is to help the user track: ${Array.isArray(vital_signs) ? vital_signs.map((v:any) => v.name || v.label).join(', ') : 'their progress'}.`;
 
-      const newCoach = coachService.createCoach({
+      const newCoach = await coachService.createCoach({
           user_id: user.id, 
           name: coach_name, 
           type: selected_activity_name, // type

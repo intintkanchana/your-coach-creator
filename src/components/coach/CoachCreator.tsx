@@ -12,6 +12,8 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/lib/auth-context";
 import { useToast } from "@/components/ui/use-toast";
 
+import { API_BASE_URL } from "@/config";
+
 
 const initialConfig: CoachConfig = {
   goal: "",
@@ -20,7 +22,7 @@ const initialConfig: CoachConfig = {
   vitalSigns: [],
 };
 
-const API_URL = "http://localhost:4000/api";
+const API_URL = `${API_BASE_URL}/api`;
 
 export function CoachCreator() {
   const [step, setStep] = useState<Step>("welcome");

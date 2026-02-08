@@ -60,7 +60,7 @@ export async function chatRoutes(fastify: FastifyInstance) {
       return reply.status(400).send({ error: 'coachId and message are required' });
     }
 
-    const coach = coachService.getCoachById(coachId);
+    const coach = await coachService.getCoachById(coachId);
     if (!coach) {
       return reply.status(404).send({ error: 'Coach not found' });
     }
@@ -69,7 +69,7 @@ export async function chatRoutes(fastify: FastifyInstance) {
     }
 
     // 1. Get History
-    const history = chatService.getHistory(coachId, user.id);
+    const history = await chatService.getHistory(coachId, user.id);
 
     // 2. Chat with Gemini
     let responseText = '';
@@ -81,10 +81,10 @@ export async function chatRoutes(fastify: FastifyInstance) {
     }
 
     // 3. Save User Message
-    chatService.saveMessage(coachId, user.id, 'user', message);
+    await chatService.saveMessage(coachId, user.id, 'user', message);
 
     // 4. Save AI Response
-    chatService.saveMessage(coachId, user.id, 'model', responseText);
+    await chatService.saveMessage(coachId, user.id, 'model', responseText);
 
     return { response: responseText };
   });
@@ -107,12 +107,12 @@ export async function chatRoutes(fastify: FastifyInstance) {
     const user = request.user!;
     const { coachId } = request.body as { coachId: number };
 
-    const coach = coachService.getCoachById(coachId);
+    const coach = await coachService.getCoachById(coachId);
     if (!coach || coach.user_id !== user.id) {
       return reply.status(404).send({ error: 'Coach not found' });
     }
 
-    const lastLog = chatService.getLastActivityLog(coachId, user.id);
+    const lastLog = await chatService.getLastActivityLog(coachId, user.id);
     try {
       const greetingJson = await chatService.generateGreeting(coach, lastLog);
       return JSON.parse(greetingJson);
@@ -141,13 +141,13 @@ export async function chatRoutes(fastify: FastifyInstance) {
     const user = request.user!;
     const { coachId, message } = request.body as { coachId: number; message: string };
 
-    const coach = coachService.getCoachById(coachId);
+    const coach = await coachService.getCoachById(coachId);
     if (!coach || coach.user_id !== user.id) {
       return reply.status(404).send({ error: 'Coach not found' });
     }
 
     // Save user message first
-    chatService.saveMessage(coachId, user.id, 'user', message);
+    await chatService.saveMessage(coachId, user.id, 'user', message);
 
     try {
       const classificationJson = await chatService.classifyIntention(coach, message);
@@ -155,7 +155,7 @@ export async function chatRoutes(fastify: FastifyInstance) {
       
       // If it's a general consult, save the response as a model message
       if (result.intention === 'GENERAL_CONSULT' && result.response_text) {
-        chatService.saveMessage(coachId, user.id, 'model', result.response_text);
+        await chatService.saveMessage(coachId, user.id, 'model', result.response_text);
       }
 
       // Include coach tracking data in the response
@@ -189,7 +189,7 @@ export async function chatRoutes(fastify: FastifyInstance) {
     const user = request.user!;
     const { coachId, logData } = request.body as { coachId: number; logData: any };
 
-    const coach = coachService.getCoachById(coachId);
+    const coach = await coachService.getCoachById(coachId);
     if (!coach || coach.user_id !== user.id) {
       return reply.status(404).send({ error: 'Coach not found' });
     }
@@ -198,7 +198,7 @@ export async function chatRoutes(fastify: FastifyInstance) {
       const analysisJson = await chatService.analyzeActivityLog(coach, logData, user.id);
       
       // Save the log and feedback
-      chatService.saveActivityLog(coachId, user.id, JSON.stringify(logData), analysisJson);
+      await chatService.saveActivityLog(coachId, user.id, JSON.stringify(logData), analysisJson);
       
       // Also save as a chat message for context? 
       // Maybe just the summary or a "Log submitted" system message + Coach feedback
@@ -207,7 +207,7 @@ export async function chatRoutes(fastify: FastifyInstance) {
       
       const result = JSON.parse(analysisJson);
       if (result.analysis && result.analysis.summary_impression) {
-          chatService.saveMessage(coachId, user.id, 'model', result.analysis.summary_impression);
+          await chatService.saveMessage(coachId, user.id, 'model', result.analysis.summary_impression);
       }
 
       return result;
