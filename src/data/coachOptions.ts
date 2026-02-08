@@ -74,14 +74,7 @@ export const defaultVitalSigns: VitalSign[] = [
     selected: false,
     type: "boolean",
   },
-  {
-    id: "gratitude",
-    name: "Gratitude Moments",
-    description: "Little things that brought you joy — research shows it helps!",
-    emoji: "🙏",
-    selected: false,
-    type: "photo",
-  },
+
 ];
 
 export const generateDirections = (goal: string) => {

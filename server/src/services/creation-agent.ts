@@ -142,14 +142,13 @@ You must balance **Quantitative** (hard data) and **Qualitative** (feeling/vibe)
 [CRITERIA FOR VITAL SIGNS]
 1. **Relationship:** Criteria must be strongly related to the activity.
 2. **Low Friction:** Data entry must take less than 30 seconds.
-3. **Diverse Inputs:** Use sliders, text, or photos where appropriate.
+3. **Diverse Inputs:** Use sliders, text, or boolean where appropriate.
 4. **Non-Judgmental:** The label should sound like an observation, not a test.
 5. **Recommendation:** Select exactly 3 "Must Track" items that are most critical for this activity. Mark them as \`is_recommended: true\`.
 [INPUT TYPES ALLOWED]
 - "number"
 - "slider_1_5"
 - "text"
-- "photo"
 - "boolean"
 [OUTPUT FORMAT]
 Valid JSON only.
@@ -158,7 +157,7 @@ Valid JSON only.
     "vital_signs": [
     {
         "label": "String (Short Title)",
-        "input_type": "number | slider_1_5 | text | photo | boolean",
+        "input_type": "number | slider_1_5 | text | boolean",
         "unit": "String or null",
         "rationale": "String (Max 15 words, very concise)",
         "emoji": "String (Single specific emoji)",
