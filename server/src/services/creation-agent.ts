@@ -144,7 +144,7 @@ You must balance **Quantitative** (hard data) and **Qualitative** (feeling/vibe)
 2. **Low Friction:** Data entry must take less than 30 seconds.
 3. **Diverse Inputs:** Use sliders, text, or boolean where appropriate.
 4. **Non-Judgmental:** The label should sound like an observation, not a test.
-5. **Recommendation:** Select exactly 3 "Must Track" items that are most critical for this activity. Mark them as \`is_recommended: true\`.
+${(userMessage.limit && userMessage.limit > 0) ? `5. **Recommendation:** Do NOT recommend any items. Set \`is_recommended: false\` for ALL items.` : `5. **Recommendation:** Select exactly 3 "Must Track" items that are most critical for this activity. Mark them as \`is_recommended: true\`.`}
 [INPUT TYPES ALLOWED]
 - "number"
 - "slider_1_5"
