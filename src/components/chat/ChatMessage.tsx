@@ -140,7 +140,21 @@ export const ChatMessage = forwardRef<HTMLDivElement, ChatMessageProps>(
                 <ReactMarkdown
                   remarkPlugins={[remarkGfm]}
                   components={{
-                    // Custom rendering for specific elements if needed
+                    h3: ({ node, ...props }) => <h3 className="text-lg font-bold text-foreground mt-4 mb-2" {...props} />,
+                    blockquote: ({ node, children, ...props }) => (
+                      <div className="bg-muted/30 border-l-4 border-primary p-4 rounded-r-lg my-4">
+                        <div className="flex gap-2">
+                          <span className="text-xl">💡</span>
+                          <div className="italic text-muted-foreground [&_strong]:block [&_strong]:mb-1">
+                            {children}
+                          </div>
+                        </div>
+                      </div>
+                    ),
+                    p: ({ node, ...props }) => <p className="leading-relaxed mb-3 last:mb-0" {...props} />,
+                    ul: ({ node, ...props }) => <ul className="list-disc pl-5 mb-4 space-y-1" {...props} />,
+                    li: ({ node, ...props }) => <li className="pl-1" {...props} />,
+                    strong: ({ node, ...props }) => <strong className="font-bold text-foreground" {...props} />,
                   }}
                 >
                   {message.content}

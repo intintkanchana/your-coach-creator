@@ -11,7 +11,7 @@ export const chatService = {
       WHERE coach_id = ? AND user_id = ? 
       ORDER BY timestamp ASC
     `, [coachId, userId]);
-    
+
     // Map to Gemini format
     return rows.map(r => ({
       role: r.role,
@@ -68,7 +68,7 @@ export const chatService = {
   },
 
   generateGreeting: async (coach: any, lastLog: any) => {
-    const lastLogSummary = lastLog 
+    const lastLogSummary = lastLog
       ? `Last gap: ${JSON.parse(lastLog.data)['gap'] || 'N/A'}, Pain: ${JSON.parse(lastLog.data)['ouch-factor'] || 'N/A'}`
       : "No previous session data.";
 
@@ -107,7 +107,7 @@ Valid JSON only.
   "quick_actions": ["String (Action 1)", "String (Action 2)", "String (Action 3)"]
 }
     `;
-    
+
     // Using a simpler system instruction for the generator itself, as the prompt contains the specific role
     return geminiService.generateJSON(prompt, "You are a helpful assistant that outputs JSON.");
   },
@@ -144,12 +144,17 @@ If the input is completely unrelated, gently explain that you are only an expert
 - **LOG_NEW_ACTIVITY**: ONLY select this if the user EXPLICITLY mentions numbers, data, or says they are "ready to log" or "finished".
 - **GENERAL_CONSULT**: Select this for EVERYTHING ELSE. Even if they ask "how should I track?", answer the question first. Do NOT trigger a log unless they provide data.
 
+[FORMATTING RULES]
+Determine if the response is **EDUCATIONAL** (needs structure) or **CASUAL** (needs brevity).
+- **IF EDUCATIONAL/ADVICE**: REQUIRED to use \`### Headline\` for the main point and \`> Quote\` for "Pro Tips", "Key Insights", or "Coach Wisdom".
+- **IF CASUAL**: Keep it simple text (no headers), use emojis.
+
 [OUTPUT FORMAT]
 Valid JSON only.
 {
   "original_request_text": "${userInput}",
   "intention": "LOG_NEW_ACTIVITY | GENERAL_CONSULT",
-  "response_text": "String (The reply to the user, strictly in the voice of ${coach.name})"
+  "response_text": "String (The reply to the user, strictly in the voice of ${coach.name}, following FORMATTING RULES)"
 }
     `;
 
@@ -165,35 +170,35 @@ Valid JSON only.
         ORDER BY created_at ASC
         LIMIT 10
     `, [coach.id, userId]);
-    
+
     // Format history for AI context
     const historyText = historyRows.map(r => {
-        try {
-            const data = JSON.parse(r.data);
-            const dataItems = Object.entries(data).map(([key, value]) => {
-                // Try to resolve tracking name if possible for cleaner key
-                let trackingKey = key;
-                if (!isNaN(Number(key)) && coach.trackings) {
-                    const trackingId = Number(key);
-                    const t = coach.trackings.find((tr: any) => tr.id === trackingId);
-                    if (t) trackingKey = t.name;
-                }
-                return `${trackingKey}: ${value}`;
-            }).join(', ');
-            return `[${new Date(r.created_at).toLocaleDateString()}] ${dataItems}`;
-        } catch (e) {
-            return '';
-        }
+      try {
+        const data = JSON.parse(r.data);
+        const dataItems = Object.entries(data).map(([key, value]) => {
+          // Try to resolve tracking name if possible for cleaner key
+          let trackingKey = key;
+          if (!isNaN(Number(key)) && coach.trackings) {
+            const trackingId = Number(key);
+            const t = coach.trackings.find((tr: any) => tr.id === trackingId);
+            if (t) trackingKey = t.name;
+          }
+          return `${trackingKey}: ${value}`;
+        }).join(', ');
+        return `[${new Date(r.created_at).toLocaleDateString()}] ${dataItems}`;
+      } catch (e) {
+        return '';
+      }
     }).filter(text => text).join('\n');
 
     // Map the log data values to the detailed tracking definitions
-    const sessionContext = coach.trackings && coach.trackings.length > 0 
+    const sessionContext = coach.trackings && coach.trackings.length > 0
       ? coach.trackings.map((t: any) => ({
-          name: t.name,
-          description: t.description,
-          type: t.type,
-          value: logData[t.id.toString()] || logData[t.id] || "Not provided"
-        }))
+        name: t.name,
+        description: t.description,
+        type: t.type,
+        value: logData[t.id.toString()] || logData[t.id] || "Not provided"
+      }))
       : Object.entries(logData).map(([key, value]) => ({ name: key, value }));
 
     const prompt = `
