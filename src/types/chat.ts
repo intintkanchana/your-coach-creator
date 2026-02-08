@@ -26,7 +26,7 @@ export interface FormField {
   id: string;
   label: string;
   emoji: string;
-  type: "slider" | "number" | "toggle" | "text";
+  type: "slider" | "number" | "boolean" | "text";
   unit?: string;
   min?: number;
   max?: number;

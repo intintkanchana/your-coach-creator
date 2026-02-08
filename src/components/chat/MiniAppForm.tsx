@@ -19,7 +19,7 @@ export function MiniAppForm({ fields, submitted, submittedData, onSubmit }: Mini
   const [formData, setFormData] = useState<Record<string, number | boolean | string>>(() => {
     const initial: Record<string, number | boolean | string> = {};
     fields.forEach((field) => {
-      if (field.type === "toggle") {
+      if (field.type === "boolean") {
         initial[field.id] = field.defaultValue ?? false;
       } else if (field.type === "text") {
         initial[field.id] = field.defaultValue ?? "";
@@ -53,7 +53,7 @@ export function MiniAppForm({ fields, submitted, submittedData, onSubmit }: Mini
                 {field.label}
               </span>
               <span className="font-medium text-foreground">
-                {field.type === "toggle"
+                {field.type === "boolean"
                   ? (submittedData[field.id] ? "Yes" : "No")
                   : `${submittedData[field.id]}${field.unit ? ` ${field.unit}` : ""}`
                 }
@@ -79,7 +79,7 @@ export function MiniAppForm({ fields, submitted, submittedData, onSubmit }: Mini
                 <span className="text-lg">{field.emoji}</span>
                 {field.label}
               </Label>
-              {field.type !== "toggle" && (
+              {field.type !== "boolean" && (
                 <span className="text-sm font-semibold text-primary">
                   {formData[field.id]}{field.unit ? ` ${field.unit}` : ""}
                 </span>
@@ -122,7 +122,7 @@ export function MiniAppForm({ fields, submitted, submittedData, onSubmit }: Mini
               </div>
             )}
 
-            {field.type === "toggle" && (
+            {field.type === "boolean" && (
               <div className="flex items-center gap-3">
                 <Switch
                   id={field.id}
@@ -136,6 +136,19 @@ export function MiniAppForm({ fields, submitted, submittedData, onSubmit }: Mini
                 </span>
               </div>
             )}
+
+
+            {field.type === "text" && (
+              <Input
+                id={field.id}
+                type="text"
+                placeholder={field.label}
+                value={formData[field.id] as string}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, [field.id]: e.target.value }))
+                }
+              />
+            )}
           </div>
         ))}
       </div>
@@ -148,6 +161,6 @@ export function MiniAppForm({ fields, submitted, submittedData, onSubmit }: Mini
         <Send className="mr-2 h-4 w-4" />
         Submit Log
       </Button>
-    </motion.div>
+    </motion.div >
   );
 }

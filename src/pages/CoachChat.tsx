@@ -35,7 +35,7 @@ const defaultConfig: CoachConfig = {
 const mockFormFields: FormField[] = [
   { id: "ouch-factor", label: "Ouch Factor", emoji: "🤕", type: "slider", min: 1, max: 5, defaultValue: 2 },
   { id: "gap", label: "Gap from floor", emoji: "📏", type: "number", unit: "cm", min: 0, max: 100, defaultValue: 15 },
-  { id: "hips-squared", label: "Hips Squared?", emoji: "📐", type: "toggle", defaultValue: false },
+  { id: "hips-squared", label: "Hips Squared?", emoji: "📐", type: "boolean", defaultValue: false },
 ];
 
 export default function CoachChat() {
@@ -259,15 +259,43 @@ export default function CoachChat() {
           setTimeout(() => {
             const trackingsToUse = data.trackings || config?.vitalSigns || [];
 
-            const formFields = trackingsToUse.map((t: any) => ({
-              id: t.id?.toString() || `field-${Math.random()}`,
-              label: t.name,
-              emoji: t.emoji || "📊",
-              type: (t.type === 'slider' ? 'slider' : 'number') as "slider" | "number",
-              min: 1,
-              max: 10,
-              defaultValue: 5
-            }));
+            const formFields = trackingsToUse.map((t: any) => {
+              let defaultValue: number | boolean | string = 5;
+              let min = 1;
+              let max = 10;
+              let unit = undefined;
+
+              switch (t.type) {
+                case 'slider':
+                  defaultValue = 3;
+                  min = 1;
+                  max = 5;
+                  break;
+                case 'boolean':
+                  defaultValue = false;
+                  break;
+                case 'text':
+                  defaultValue = "";
+                  break;
+                case 'number':
+                  defaultValue = 0;
+                  min = 0;
+                  max = 100;
+                  unit = t.unit;
+                  break;
+              }
+
+              return {
+                id: t.id?.toString() || `field-${Math.random()}`,
+                label: t.name,
+                emoji: t.emoji,
+                type: t.type,
+                min,
+                max,
+                unit,
+                defaultValue
+              };
+            });
 
             if (formFields.length === 0) {
               formFields.push(...mockFormFields);
