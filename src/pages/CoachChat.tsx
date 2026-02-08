@@ -547,7 +547,7 @@ export default function CoachChat() {
       summaryParts.push(`${emoji} ${label}: ${value}`);
     });
 
-    const summaryText = summaryParts.join(" • ");
+    const summaryText = summaryParts.join(" <br />n• ");
 
     setMessages((prev) => [
       ...prev,

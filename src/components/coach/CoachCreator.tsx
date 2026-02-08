@@ -251,8 +251,15 @@ export function CoachCreator() {
         description: v.rationale,
         emoji: v.emoji || "📊",
         type: v.input_type === 'slider_1_5' ? 'slider' : v.input_type,
-        selected: false, // Default to unselected, user must pick
+        selected: v.is_recommended || false, // Use AI recommendation
       }));
+
+      // Fallback: If no vitals are selected (e.g. AI didn't mark any), select the first 3
+      if (generatedVitals.filter((v: any) => v.selected).length === 0) {
+        generatedVitals.forEach((v: any, i: number) => {
+          if (i < 3) v.selected = true;
+        });
+      }
 
       setSuggestedVitals(generatedVitals);
       setStep("select-vitals");

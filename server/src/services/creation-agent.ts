@@ -144,6 +144,7 @@ You must balance **Quantitative** (hard data) and **Qualitative** (feeling/vibe)
 2. **Low Friction:** Data entry must take less than 30 seconds.
 3. **Diverse Inputs:** Use sliders, text, or photos where appropriate.
 4. **Non-Judgmental:** The label should sound like an observation, not a test.
+5. **Recommendation:** Select exactly 3 "Must Track" items that are most critical for this activity. Mark them as \`is_recommended: true\`.
 [INPUT TYPES ALLOWED]
 - "number"
 - "slider_1_5"
@@ -160,7 +161,8 @@ Valid JSON only.
         "input_type": "number | slider_1_5 | text | photo | boolean",
         "unit": "String or null",
         "rationale": "String (Max 15 words, very concise)",
-        "emoji": "String (Single specific emoji)"
+        "emoji": "String (Single specific emoji)",
+        "is_recommended": "Boolean"
     }
     ]
 }
