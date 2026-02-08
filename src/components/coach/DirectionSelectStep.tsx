@@ -8,13 +8,14 @@ import { RefreshCw, Check, ChevronLeft } from "lucide-react";
 interface DirectionSelectStepProps {
   goal: string;
   directions: CoachDirection[];
+  rationale?: string;
   isLoading: boolean;
   onRegenerate: () => void;
   onSelect: (direction: CoachDirection) => void;
   onBack: () => void;
 }
 
-export function DirectionSelectStep({ goal, directions, isLoading, onRegenerate, onSelect, onBack }: DirectionSelectStepProps) {
+export function DirectionSelectStep({ goal, directions, rationale, isLoading, onRegenerate, onSelect, onBack }: DirectionSelectStepProps) {
   const [selected, setSelected] = useState<string | null>(null);
 
   const handleContinue = () => {
@@ -64,8 +65,7 @@ export function DirectionSelectStep({ goal, directions, isLoading, onRegenerate,
         transition={{ delay: 0.3 }}
         className="text-muted-foreground text-center mb-8 max-w-md"
       >
-        Choose the one that feels right — or we can try again.
-        There's no wrong answer here.
+        {rationale}
       </motion.p>
 
       <AnimatePresence mode="wait">

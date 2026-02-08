@@ -73,7 +73,7 @@ Analyze the {{user_goal}}. Generate 3 distinct "Refined Activities" that the use
 Provide valid JSON with a list of 3 options.
 {
     "user_original_goal": "{{user_goal}}",
-    "rationale": "String 1-2 sentences",
+    "rationale": "String (Max 2 lines, approx 20-30 words). Explain WHY these 3 options were chosen based on the user's goal.",
     "options": [
     {
         "activity_name": "String (Catchy Title)",
@@ -144,7 +144,7 @@ You must balance **Quantitative** (hard data) and **Qualitative** (feeling/vibe)
 2. **Low Friction:** Data entry must take less than 30 seconds.
 3. **Diverse Inputs:** Use sliders, text, or boolean where appropriate.
 4. **Non-Judgmental:** The label should sound like an observation, not a test.
-5. **Recommendation:** Select exactly 3 "Must Track" items that are most critical for this activity. Mark them as \`is_recommended: true\`.
+${(userMessage.limit && userMessage.limit > 0) ? `5. **Recommendation:** Do NOT recommend any items. Set \`is_recommended: false\` for ALL items.` : `5. **Recommendation:** Select exactly 3 "Must Track" items that are most critical for this activity. Mark them as \`is_recommended: true\`.`}
 [INPUT TYPES ALLOWED]
 - "number"
 - "slider_1_5"
