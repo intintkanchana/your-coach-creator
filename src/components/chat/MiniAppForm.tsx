@@ -81,11 +81,11 @@ export function MiniAppForm({ fields, submitted, submittedData, onSubmit, disabl
                 <span className="text-lg">{field.emoji}</span>
                 {field.label}
               </Label>
-              {field.type !== "boolean" && (
-                <span className="text-sm font-semibold text-primary">
-                  {formData[field.id]}{field.unit ? ` ${field.unit}` : ""}
-                </span>
-              )}
+              <span className="text-sm font-semibold text-primary">
+                {field.type === "boolean"
+                  ? (formData[field.id] ? "Yes" : "No")
+                  : `${formData[field.id]}${field.unit ? ` ${field.unit}` : ""}`}
+              </span>
             </div>
 
             {field.type === "slider" && (

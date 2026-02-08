@@ -38,7 +38,7 @@ export function AnalysisDisplay({ data }: AnalysisDisplayProps) {
                                     {item.label}
                                 </span>
                                 <span className="bg-primary/10 text-primary text-xs font-bold px-2 py-1 rounded-md">
-                                    {item.value}
+                                    {item.value === true ? 'Yes' : item.value === false ? 'No' : item.value}
                                 </span>
                             </div>
                             <p className="text-sm text-card-foreground leading-snug">

@@ -12,7 +12,7 @@ export interface AnalysisData {
   summary_impression: string;
   vital_sign_feedback: {
     label: string;
-    value: number | string;
+    value: number | string | boolean;
     emoji?: string;
     comment: string;
   }[];

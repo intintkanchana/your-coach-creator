@@ -544,7 +544,8 @@ export default function CoachChat() {
     Object.entries(data).forEach(([key, value]) => {
       const label = config?.vitalSigns?.find(v => v.id === key)?.name || key;
       const emoji = config?.vitalSigns?.find(v => v.id === key)?.emoji || "📊";
-      summaryParts.push(`${emoji} ${label}: ${value}`);
+      const displayValue = value === true ? "Yes" : value === false ? "No" : value;
+      summaryParts.push(`${emoji} ${label}: ${displayValue}`);
     });
 
     const summaryText = summaryParts.join(" • ");
