@@ -206,16 +206,6 @@ export function SummaryStep({ config, isLoading = false, onStartOver, onCreate }
               Let's Do This!
             </Button>
           </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.8 }}
-            className="flex items-center gap-2 text-sm text-muted-foreground mt-6"
-          >
-            <Heart className="h-4 w-4 text-accent" />
-            <span>Remember: everything can be adjusted as we go!</span>
-          </motion.div>
         </>
       )}
     </motion.div>
