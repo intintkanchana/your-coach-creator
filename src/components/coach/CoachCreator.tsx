@@ -253,6 +253,7 @@ export function CoachCreator() {
         description: v.rationale,
         emoji: v.emoji || "📊",
         type: v.input_type === 'slider_1_5' ? 'slider' : v.input_type,
+        unit: v.unit || undefined,
         selected: v.is_recommended || false, // Use AI recommendation
       }));
 
@@ -348,6 +349,7 @@ export function CoachCreator() {
         description: v.rationale,
         emoji: v.emoji || "✨",
         type: v.input_type === 'slider_1_5' ? 'slider' : v.input_type,
+        unit: v.unit || undefined,
         selected: false, // Don't auto-select custom ones as per user request
       }));
 
@@ -396,7 +398,8 @@ User Goal: ${config.goal}`;
               name: v.name,
               description: v.description,
               emoji: v.emoji,
-              type: v.type
+              type: v.type,
+              unit: v.unit
             }))
         }),
       });

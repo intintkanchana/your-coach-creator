@@ -5,7 +5,7 @@ import { coachService } from '../services/coach';
 import { geminiService } from '../services/gemini';
 
 export async function chatRoutes(fastify: FastifyInstance) {
-  fastify.post('/api/chat', { 
+  fastify.post('/api/chat', {
     preHandler: requireAuth,
     schema: {
       description: 'Send a message to a coach',
@@ -65,7 +65,7 @@ export async function chatRoutes(fastify: FastifyInstance) {
       return reply.status(404).send({ error: 'Coach not found' });
     }
     if (coach.user_id !== user.id) {
-       return reply.status(403).send({ error: 'This is not your coach' });
+      return reply.status(403).send({ error: 'This is not your coach' });
     }
 
     // 1. Get History
@@ -168,7 +168,7 @@ export async function chatRoutes(fastify: FastifyInstance) {
     try {
       const classificationJson = await chatService.classifyIntention(coach, message);
       const result = JSON.parse(classificationJson);
-      
+
       // If it's a general consult, save the response as a model message
       if (result.intention === 'GENERAL_CONSULT' && result.response_text) {
         await chatService.saveMessage(coachId, user.id, 'model', result.response_text);
@@ -184,8 +184,8 @@ export async function chatRoutes(fastify: FastifyInstance) {
       if (result.intention === 'LOG_NEW_ACTIVITY') {
         // Construct the form request message
         const formRequest = {
-            timestamp: new Date().toISOString(),
-            status: 'REQUESTED'
+          timestamp: new Date().toISOString(),
+          status: 'REQUESTED'
         };
         await chatService.saveMessage(coachId, user.id, 'model', `JSON_FORM_REQUEST:${JSON.stringify(formRequest)}`);
       }
@@ -225,16 +225,16 @@ export async function chatRoutes(fastify: FastifyInstance) {
     try {
       // 0. Save User Log Summary (if provided)
       if (summaryText) {
-         await chatService.saveMessage(coachId, user.id, 'user', summaryText);
+        await chatService.saveMessage(coachId, user.id, 'user', summaryText);
       }
 
       // 0. Update Last Form Message to SUBMITTED
       // We do this before analysis so history reflects it even if analysis fails (though we should probably do it after success to be safe, but UI optimistic update implies success)
       try {
         const formSubmitted = {
-            timestamp: new Date().toISOString(),
-            status: 'SUBMITTED',
-            formData: logData
+          timestamp: new Date().toISOString(),
+          status: 'SUBMITTED',
+          formData: logData
         };
         await chatService.updateLastFormMessage(coachId, user.id, `JSON_FORM_SUBMITTED:${JSON.stringify(formSubmitted)}`);
       } catch (e) {
@@ -242,15 +242,15 @@ export async function chatRoutes(fastify: FastifyInstance) {
       }
 
       const analysisJson = await chatService.analyzeActivityLog(coach, logData, user.id);
-      
+
       // Save the log and feedback
       await chatService.saveActivityLog(coachId, user.id, JSON.stringify(logData), analysisJson);
-      
+
       // Also save as a chat message for context? 
       // Maybe just the summary or a "Log submitted" system message + Coach feedback
       // specific feedback is complex to store in simple chat history, staying with activity_logs for now.
       // But we should probably add a model message so chat history sees the response.
-      
+
       let result;
       try {
         result = JSON.parse(analysisJson);
@@ -261,9 +261,9 @@ export async function chatRoutes(fastify: FastifyInstance) {
 
       // Save Full Analysis Data for History
       if (result.analysis) {
-          // Use a special prefix to identify JSON data in history
-          const jsonContent = `JSON_ANALYSIS:${JSON.stringify(result.analysis)}`;
-          await chatService.saveMessage(coachId, user.id, 'model', jsonContent);
+        // Use a special prefix to identify JSON data in history
+        const jsonContent = `JSON_ANALYSIS:${JSON.stringify(result.analysis)}`;
+        await chatService.saveMessage(coachId, user.id, 'model', jsonContent);
       }
 
       return result;
@@ -302,6 +302,40 @@ export async function chatRoutes(fastify: FastifyInstance) {
     } catch (e) {
       request.log.error(e);
       return reply.status(500).send({ error: 'Failed to fetch history' });
+    }
+  });
+
+  fastify.get('/api/chat/logs/:coachId', {
+    preHandler: requireAuth,
+    schema: {
+      description: 'Get all activity logs for a coach',
+      tags: ['Chat'],
+      security: [{ apiKey: [] }],
+      params: {
+        type: 'object',
+        properties: {
+          coachId: { type: 'number' }
+        },
+        required: ['coachId']
+      }
+    }
+  }, async (request, reply) => {
+    const user = request.user!;
+    const { coachId } = request.params as { coachId: number };
+
+    // Optimize: Check ownership once?
+    // Let's reuse coachService.getCoachById just to be safe about ownership
+    const coach = await coachService.getCoachById(coachId);
+    if (!coach || coach.user_id !== user.id) {
+      return reply.status(404).send({ error: 'Coach not found' });
+    }
+
+    try {
+      const logs = await chatService.getAllActivityLogs(coachId, user.id);
+      return logs;
+    } catch (e) {
+      request.log.error(e);
+      return reply.status(500).send({ error: 'Failed to fetch logs' });
     }
   });
 }

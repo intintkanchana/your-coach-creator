@@ -1,11 +1,11 @@
 import { CoachConfig } from "./coach";
 
-export type MessageType = 
-  | "coach" 
-  | "user" 
-  | "system" 
-  | "form" 
-  | "tip" 
+export type MessageType =
+  | "coach"
+  | "user"
+  | "system"
+  | "form"
+  | "tip"
   | "image";
 
 export interface AnalysisData {
@@ -25,6 +25,7 @@ export interface AnalysisData {
 export interface FormField {
   id: string;
   label: string;
+  description?: string;
   emoji: string;
   type: "slider" | "number" | "boolean" | "text";
   unit?: string;

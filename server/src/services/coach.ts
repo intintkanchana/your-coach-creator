@@ -21,14 +21,15 @@ export interface Tracking {
   description?: string;
   emoji?: string;
   type?: string;
+  unit?: string;
 }
 
 export const coachService = {
-  createCoach: async (data: { 
-    name: string; 
-    type: string; 
-    system_instruction?: string; 
-    icon?: string; 
+  createCoach: async (data: {
+    name: string;
+    type: string;
+    system_instruction?: string;
+    icon?: string;
     user_id: number;
     goal?: string;
     bio?: string;
@@ -36,21 +37,21 @@ export const coachService = {
     trackings?: any[];
   }) => {
     // Default system instruction if not provided
-    const instruction = data.system_instruction || 
+    const instruction = data.system_instruction ||
       `You are a ${data.type} coach named ${data.name}. Help the user with their goals.`;
 
     const coach = await db.transaction(async (tx) => {
       // Ensure vital_signs is stringified if it's an object/array (keeping for backward compat)
-      const vitalSignsStr = data.vital_signs ? 
-        (typeof data.vital_signs === 'string' ? data.vital_signs : JSON.stringify(data.vital_signs)) 
+      const vitalSignsStr = data.vital_signs ?
+        (typeof data.vital_signs === 'string' ? data.vital_signs : JSON.stringify(data.vital_signs))
         : null;
 
       const newCoach = await tx.get<Coach>(`
         INSERT INTO coaches (name, type, system_instruction, icon, user_id, goal, bio, vital_signs)
         VALUES (@name, @type, @system_instruction, @icon, @user_id, @goal, @bio, @vital_signs)
         RETURNING *
-      `, { 
-        ...data, 
+      `, {
+        ...data,
         goal: data.goal || null,
         bio: data.bio || null,
         system_instruction: instruction,
@@ -58,20 +59,21 @@ export const coachService = {
       });
 
       if (!newCoach) {
-          throw new Error('Failed to create coach');
+        throw new Error('Failed to create coach');
       }
 
       if (data.trackings && Array.isArray(data.trackings)) {
         for (const t of data.trackings) {
           await tx.run(`
-            INSERT INTO trackings (coach_id, name, description, emoji, type)
-            VALUES (@coach_id, @name, @description, @emoji, @type)
+            INSERT INTO trackings (coach_id, name, description, emoji, type, unit)
+            VALUES (@coach_id, @name, @description, @emoji, @type, @unit)
           `, {
             coach_id: newCoach.id,
             name: t.name,
             description: t.description || null,
             emoji: t.emoji || null,
-            type: t.type || null
+            type: t.type || null,
+            unit: t.unit || null
           });
         }
       }
@@ -83,7 +85,7 @@ export const coachService = {
     if (coach) {
       coach.trackings = await db.query<Tracking>('SELECT * FROM trackings WHERE coach_id = ?', [coach.id]);
     }
-    
+
     return coach;
   },
 
@@ -101,11 +103,11 @@ export const coachService = {
 
   deleteCoach: async (id: number, userId: number) => {
     return db.transaction(async (tx) => {
-       await tx.run('DELETE FROM messages WHERE coach_id = ?', [id]);
-       await tx.run('DELETE FROM trackings WHERE coach_id = ?', [id]);
-       await tx.run('DELETE FROM activity_logs WHERE coach_id = ?', [id]);
-       const result = await tx.run('DELETE FROM coaches WHERE id = ? AND user_id = ?', [id, userId]);
-       return result;
+      await tx.run('DELETE FROM messages WHERE coach_id = ?', [id]);
+      await tx.run('DELETE FROM trackings WHERE coach_id = ?', [id]);
+      await tx.run('DELETE FROM activity_logs WHERE coach_id = ?', [id]);
+      const result = await tx.run('DELETE FROM coaches WHERE id = ? AND user_id = ?', [id, userId]);
+      return result;
     });
   }
 };

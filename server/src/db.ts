@@ -66,6 +66,7 @@ export async function initDb() {
         description TEXT,
         emoji TEXT,
         type TEXT,
+        unit TEXT,
         FOREIGN KEY(coach_id) REFERENCES coaches(id)
       );
 
@@ -123,6 +124,7 @@ export async function initDb() {
         description TEXT,
         emoji TEXT,
         type TEXT,
+        unit TEXT,
         FOREIGN KEY(coach_id) REFERENCES coaches(id)
       );
 
@@ -157,6 +159,7 @@ export async function initDb() {
   }
   await safeAddColumn('coaches', 'bio', 'TEXT');
   await safeAddColumn('coaches', 'vital_signs', 'TEXT');
+  await safeAddColumn('trackings', 'unit', 'TEXT');
 }
 
 export default db;

@@ -7,6 +7,7 @@ import Landing from "./pages/Landing";
 import CoachList from "./pages/CoachList";
 import Index from "./pages/Index";
 import CoachChat from "./pages/CoachChat";
+import ActivityProfile from "./pages/ActivityProfile";
 import NotFound from "./pages/NotFound";
 import { AuthProvider } from "./lib/auth-context";
 import { GoogleOAuthProvider } from "@react-oauth/google";
@@ -26,6 +27,7 @@ const App = () => (
               <Route path="/coaches" element={<CoachList />} />
               <Route path="/create" element={<Index />} />
               <Route path="/chat/:coachId" element={<CoachChat />} />
+              <Route path="/logs/:coachId" element={<ActivityProfile />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

@@ -21,6 +21,7 @@ export interface VitalSign {
   emoji: string;
   selected: boolean;
   type: VitalSignType;
+  unit?: string;
 }
 
 export interface CoachConfig {

@@ -1,6 +1,7 @@
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { CoachConfig } from "@/types/coach";
 import { motion } from "framer-motion";
+import { useNavigate, useParams } from "react-router-dom";
 
 interface SettingsSheetProps {
   open: boolean;
@@ -9,6 +10,8 @@ interface SettingsSheetProps {
 }
 
 export function SettingsSheet({ open, onOpenChange, config }: SettingsSheetProps) {
+  const navigate = useNavigate();
+  const { coachId } = useParams();
   const selectedVitals = config.vitalSigns.filter((v) => v.selected);
 
   // Helper to get bio description - reusing logic if needed or just display config.persona.description
@@ -44,6 +47,28 @@ export function SettingsSheet({ open, onOpenChange, config }: SettingsSheetProps
 
           {/* Summary Card Style */}
           <div className="w-full bg-card rounded-3xl border-2 border-border p-6 shadow-sm space-y-5">
+            {/* Activity Profile Link */}
+            <button
+              onClick={() => {
+                onOpenChange(false);
+                navigate(`/logs/${coachId}`);
+              }}
+              className="w-full flex items-center justify-between p-4 bg-primary/5 hover:bg-primary/10 rounded-xl transition-colors group"
+            >
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-xl">
+                  📊
+                </div>
+                <div className="text-left">
+                  <p className="font-semibold text-foreground">Activity Profile</p>
+                  <p className="text-xs text-muted-foreground">View your log history</p>
+                </div>
+              </div>
+              <div className="text-primary group-hover:translate-x-1 transition-transform">
+                →
+              </div>
+            </button>
+
             {/* Goal */}
             <div>
               <p className="text-sm text-muted-foreground mb-1">Your Goal</p>

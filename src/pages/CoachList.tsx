@@ -218,7 +218,7 @@ const CoachList = () => {
                 >
                   <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
                   <Plus className="w-5 h-5" />
-                  <span>Hire check Your First Coach</span>
+                  <span>Hire Your First Coach</span>
                 </button>
               </motion.div>
             </motion.div>

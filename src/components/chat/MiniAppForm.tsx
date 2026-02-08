@@ -6,7 +6,12 @@ import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { FormField } from "@/types/chat";
-import { CheckCircle2, Send } from "lucide-react";
+import { CheckCircle2, Send, Info } from "lucide-react";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 interface MiniAppFormProps {
   fields: FormField[];
@@ -77,15 +82,34 @@ export function MiniAppForm({ fields, submitted, submittedData, onSubmit, disabl
         {fields.map((field) => (
           <div key={field.id} className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label htmlFor={field.id} className="text-sm font-medium flex items-center gap-2">
-                <span className="text-lg">{field.emoji}</span>
-                {field.label}
-              </Label>
-              <span className="text-sm font-semibold text-primary">
-                {field.type === "boolean"
-                  ? (formData[field.id] ? "Yes" : "No")
-                  : `${formData[field.id]}${field.unit ? ` ${field.unit}` : ""}`}
-              </span>
+              <div className="flex items-center gap-2">
+                <Label htmlFor={field.id} className="text-sm font-medium flex items-center gap-2 cursor-pointer">
+                  <span className="text-lg">{field.emoji}</span>
+                  {field.label}
+                </Label>
+                {field.description && (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        className="text-muted-foreground/70 hover:text-primary transition-colors cursor-pointer flex items-center justify-center rounded-full hover:bg-muted p-0.5"
+                      >
+                        <Info className="h-3.5 w-3.5" />
+                        <span className="sr-only">Info</span>
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent side="top" align="center" className="w-64 p-3 shadow-lg">
+                      <p className="text-sm leading-relaxed">{field.description}</p>
+                    </PopoverContent>
+                  </Popover>
+                )}
+              </div>
+              {field.type === "slider" && (
+                <span className="text-sm font-semibold text-primary">
+                  {formData[field.id]}
+                  {field.unit ? ` ${field.unit}` : ""}
+                </span>
+              )}
             </div>
 
             {field.type === "slider" && (

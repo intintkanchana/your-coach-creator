@@ -44,6 +44,14 @@ export const chatService = {
     `, [coachId, userId]);
   },
 
+  getAllActivityLogs: async (coachId: number, userId: number) => {
+    return db.query(`
+      SELECT * FROM activity_logs
+      WHERE coach_id = ? AND user_id = ?
+      ORDER BY created_at DESC
+    `, [coachId, userId]);
+  },
+
   saveActivityLog: async (coachId: number, userId: number, data: string, feedback: string) => {
     await db.run(`
       INSERT INTO activity_logs (coach_id, user_id, data, feedback)

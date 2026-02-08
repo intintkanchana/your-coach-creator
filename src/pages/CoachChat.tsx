@@ -146,6 +146,7 @@ export default function CoachChat() {
                 return {
                   id: t.id?.toString() || `field-${Math.random()}`,
                   label: t.name,
+                  description: t.description,
                   emoji: t.emoji,
                   type: t.type,
                   min,
@@ -197,6 +198,7 @@ export default function CoachChat() {
                   return {
                     id: t.id?.toString() || `field-${Math.random()}`,
                     label: t.name,
+                    description: t.description,
                     emoji: t.emoji,
                     type: t.type,
                     min,
@@ -474,6 +476,7 @@ export default function CoachChat() {
               return {
                 id: t.id?.toString() || `field-${Math.random()}`,
                 label: t.name,
+                description: t.description,
                 emoji: t.emoji,
                 type: t.type,
                 min,
