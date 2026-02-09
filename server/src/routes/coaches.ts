@@ -35,7 +35,8 @@ export async function coachRoutes(fastify: FastifyInstance) {
                     name: { type: 'string' },
                     description: { type: 'string' },
                     emoji: { type: 'string' },
-                    type: { type: 'string' }
+                    type: { type: 'string' },
+                    unit: { type: 'string' }
                   }
                 }
               }
@@ -85,7 +86,8 @@ export async function coachRoutes(fastify: FastifyInstance) {
                   name: { type: 'string' },
                   description: { type: 'string' },
                   emoji: { type: 'string' },
-                  type: { type: 'string' }
+                  type: { type: 'string' },
+                  unit: { type: 'string' }
                 }
               }
             }
@@ -132,11 +134,12 @@ export async function coachRoutes(fastify: FastifyInstance) {
             items: {
               type: 'object',
               properties: {
-                name: { type: 'string' },
-                description: { type: 'string' },
-                emoji: { type: 'string' },
-                type: { type: 'string' }
-              }
+                  name: { type: 'string' },
+                  description: { type: 'string' },
+                  emoji: { type: 'string' },
+                  type: { type: 'string' },
+                  unit: { type: 'string' }
+                }
             }
           }
         },
@@ -163,7 +166,8 @@ export async function coachRoutes(fastify: FastifyInstance) {
                   name: { type: 'string' },
                   description: { type: 'string' },
                   emoji: { type: 'string' },
-                  type: { type: 'string' }
+                  type: { type: 'string' },
+                  unit: { type: 'string' }
                 }
               }
             }

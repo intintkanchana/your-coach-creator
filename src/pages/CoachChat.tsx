@@ -293,7 +293,8 @@ export default function CoachChat() {
               description: t.description || "",
               emoji: t.emoji || "📊",
               selected: true,
-              type: t.type || "number"
+              type: t.type || "number",
+              unit: t.type === 'number' || t.type === 'slider' ? t.unit : undefined
             }));
           } else {
             try {

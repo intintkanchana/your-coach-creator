@@ -176,6 +176,12 @@ ${(userMessage.limit && userMessage.limit > 0) ? `5. **Recommendation:** Do NOT 
 - "text" (Use for context: "Surface type", "Location")
 - "boolean" (Use for binary states: "Yes/No")
 
+[UNIT GUIDELINES]
+- **Financial Refinement:** NEVER use generic "currency". Use specific symbols or codes: "USD", "THB", "BTC", "€", "$".
+- **Distance/Size:** NEVER use generic "distance". Use "km", "m", "miles", "cm".
+- **Time:** Use "mins", "hours", "seconds".
+- **Quantity:** Use "times", "cups", "pages", "reps".
+
 [OUTPUT FORMAT]
 Valid JSON only.
 {
@@ -184,7 +190,7 @@ Valid JSON only.
     {
         "label": "String (Short Title, max 3 words)",
         "input_type": "number | slider_1_5 | text | boolean",
-        "unit": "String (e.g., 'seconds', 'kg', 'pages') or null",
+        "unit": "String (Specific unit e.g., 'USD', 'km', 'mins') or null",
         "rationale": "String (Why this specific metric matters)",
         "emoji": "String (Single specific emoji)",
         "is_recommended": "Boolean"
