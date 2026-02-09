@@ -1,15 +1,10 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
-import { authService } from '../services/auth';
+import { authService, User } from '../services/auth';
 
 // Extend FastifyRequest to include user
 declare module 'fastify' {
   interface FastifyRequest {
-    user?: {
-      id: number;
-      google_id: string;
-      email: string;
-      name: string;
-    };
+    user?: User;
   }
 }
 
