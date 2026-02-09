@@ -151,15 +151,19 @@ const Landing = () => {
       </div>
 
       <Dialog open={showGuestDialog} onOpenChange={setShowGuestDialog}>
-        <DialogContent>
+        <DialogContent className="w-[90%] sm:max-w-md rounded-2xl">
           <DialogHeader>
-            <DialogTitle>Continue as Guest</DialogTitle>
-            <DialogDescription>
-              Enter a nickname to start your journey. Your data will be saved on this device.
+            <DialogTitle className="text-center text-2xl">👋</DialogTitle>
+            <DialogDescription className="text-center text-lg font-medium text-foreground">
+              Continue as Guest
             </DialogDescription>
+            <p className="text-center text-sm text-muted-foreground">
+              Enter a nickname to start your journey. Your data will be saved on this device.
+            </p>
           </DialogHeader>
-          <div className="py-4">
+          <div className="py-6">
             <Input
+              className="text-center text-lg h-12 rounded-xl"
               placeholder="Your nickname (e.g. Ace, Sparky)"
               value={guestNickname}
               onChange={(e) => setGuestNickname(e.target.value)}
@@ -170,17 +174,18 @@ const Landing = () => {
               }}
             />
           </div>
-          <DialogFooter>
+          <DialogFooter className="flex gap-3 sm:justify-center">
             <Button
               variant="outline"
               onClick={() => setShowGuestDialog(false)}
               disabled={isGuestLoading}
+              className="rounded-xl px-6"
             >
               Cancel
             </Button>
             <Button
               onClick={handleGuestLogin}
-              className="bg-chat-user text-white"
+              className="bg-chat-user text-white rounded-xl px-6"
               disabled={isGuestLoading || !guestNickname.trim()}
             >
               {isGuestLoading ? "Starting..." : "Let's Go"}
