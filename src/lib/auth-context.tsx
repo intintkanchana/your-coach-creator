@@ -64,13 +64,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             const data = await response.json();
 
             // Store user and token
-            // The API returns { user: { ... }, sessionToken: "..." }
+            // The API returns { user: { ... }, sessionToken: "...", refreshToken: "..." }
             if (data.user && data.sessionToken) {
-                // Enhance user object with picture if included in the Google token (would need decoding)
-                // For now, we rely on what the server sends back. 
-                // If we want the picture, we might need to parse the ID token here on the client too,
-                // or update the backend to send it. For now, let's stick to the server response.
                 localStorage.setItem("sessionToken", data.sessionToken);
+                if (data.refreshToken) {
+                    localStorage.setItem("refreshToken", data.refreshToken);
+                }
                 localStorage.setItem("user", JSON.stringify(data.user));
                 setUser(data.user);
 
@@ -110,6 +109,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             if (data.user && data.sessionToken) {
                 const userWithGuestFlag = { ...data.user, isGuest: true };
                 localStorage.setItem("sessionToken", data.sessionToken);
+                if (data.refreshToken) {
+                    localStorage.setItem("refreshToken", data.refreshToken);
+                }
                 localStorage.setItem("user", JSON.stringify(userWithGuestFlag));
                 setUser(userWithGuestFlag);
                 navigate("/coaches");
@@ -126,6 +128,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const logout = () => {
         localStorage.removeItem("sessionToken");
+        localStorage.removeItem("refreshToken");
         localStorage.removeItem("user");
         setUser(null);
         navigate("/");

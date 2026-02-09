@@ -9,6 +9,7 @@ import { SettingsSheet } from "@/components/chat/SettingsSheet";
 import { ChatMessage as ChatMessageType, QuickAction, FormField } from "@/types/chat";
 import { CoachConfig } from "@/types/coach";
 import { API_BASE_URL } from "@/config";
+import { apiFetch } from "@/lib/api";
 
 // Helper to format date
 const formatDateLabel = (date: Date) => {
@@ -94,14 +95,7 @@ export default function CoachChat() {
       if (!coachId || !config) return;
 
       try {
-        const token = localStorage.getItem("sessionToken");
-        if (!token) return;
-
-        const res = await fetch(`${API_BASE_URL}/api/chat/history/${coachId}`, {
-          headers: {
-            "Authorization": `Bearer ${token}`
-          }
-        });
+        const res = await apiFetch(`/api/chat/history/${coachId}`);
 
         if (res.ok) {
           const historyData = await res.json();
@@ -269,17 +263,7 @@ export default function CoachChat() {
       if (!coachId) return;
 
       try {
-        const token = localStorage.getItem("sessionToken");
-        if (!token) {
-          navigate("/");
-          return;
-        }
-
-        const response = await fetch(`${API_BASE_URL}/api/coaches/${coachId}`, {
-          headers: {
-            "Authorization": `Bearer ${token}`
-          }
-        });
+        const response = await apiFetch(`/api/coaches/${coachId}`);
 
         if (response.ok) {
           const coachData = await response.json();
@@ -349,13 +333,8 @@ export default function CoachChat() {
 
     try {
       setIsTyping(true);
-      const token = localStorage.getItem("sessionToken");
-      const res = await fetch(`${API_BASE_URL}/api/chat/greeting`, {
+      const res = await apiFetch(`/api/chat/greeting`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
         body: JSON.stringify({ coachId: parseInt(coachId) })
       });
 
@@ -435,13 +414,8 @@ export default function CoachChat() {
     setIsTyping(true);
 
     try {
-      const token = localStorage.getItem("sessionToken");
-      const res = await fetch(`${API_BASE_URL}/api/chat/classify`, {
+      const res = await apiFetch(`/api/chat/classify`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
         body: JSON.stringify({
           coachId: parseInt(coachId!),
           message: content
@@ -598,13 +572,8 @@ export default function CoachChat() {
     setIsTyping(true);
 
     try {
-      const token = localStorage.getItem("sessionToken");
-      const res = await fetch(`${API_BASE_URL}/api/chat/analyze`, {
+      const res = await apiFetch(`/api/chat/analyze`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
         body: JSON.stringify({
           coachId: parseInt(coachId!),
           logData: data,

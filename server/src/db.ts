@@ -159,7 +159,15 @@ export async function initDb() {
   }
   await safeAddColumn('coaches', 'bio', 'TEXT');
   await safeAddColumn('coaches', 'vital_signs', 'TEXT');
+  await safeAddColumn('coaches', 'vital_signs', 'TEXT');
   await safeAddColumn('trackings', 'unit', 'TEXT');
+
+  await safeAddColumn('users', 'refresh_token', 'TEXT');
+  if (dbType === 'postgres') {
+    await safeAddColumn('users', 'token_expires_at', 'TIMESTAMP');
+  } else {
+    await safeAddColumn('users', 'token_expires_at', 'DATETIME');
+  }
 
   // Migrations for Guest Mode (Nullable google_id and email)
   if (dbType === 'postgres') {

@@ -27,7 +27,8 @@ export async function authRoutes(fastify: FastifyInstance) {
                 picture: { type: 'string' }
               }
             },
-            sessionToken: { type: 'string' }
+            sessionToken: { type: 'string' },
+            refreshToken: { type: 'string' }
           }
         },
         400: {
@@ -54,7 +55,11 @@ export async function authRoutes(fastify: FastifyInstance) {
     try {
       const googleUser = await authService.verifyGoogleToken(token);
       const user = await authService.loginUser(googleUser);
-      return { user, sessionToken: user.session_token };
+      return { 
+        user, 
+        sessionToken: user.session_token,
+        refreshToken: user.refresh_token
+      };
     } catch (error) {
       request.log.error(error);
       return reply.status(401).send({ error: 'Authentication failed' });
@@ -86,7 +91,8 @@ export async function authRoutes(fastify: FastifyInstance) {
                 picture: { type: 'string', nullable: true }
               }
             },
-            sessionToken: { type: 'string' }
+            sessionToken: { type: 'string' },
+            refreshToken: { type: 'string' }
           }
         },
         400: {
@@ -112,10 +118,77 @@ export async function authRoutes(fastify: FastifyInstance) {
 
     try {
       const user = await authService.loginGuest(nickname);
-      return { user, sessionToken: user.session_token };
+      return { 
+        user, 
+        sessionToken: user.session_token,
+        refreshToken: user.refresh_token
+      };
     } catch (error) {
       request.log.error(error);
       return reply.status(500).send({ error: 'Guest login failed' });
+    }
+  });
+
+  fastify.post('/api/auth/refresh', {
+    schema: {
+      description: 'Refresh Access Token',
+      tags: ['Auth'],
+      body: {
+        type: 'object',
+        properties: {
+          refreshToken: { type: 'string' }
+        },
+        required: ['refreshToken']
+      },
+      response: {
+        200: {
+          type: 'object',
+          properties: {
+            user: {
+              type: 'object',
+              properties: {
+                id: { type: 'number' },
+                google_id: { type: 'string', nullable: true },
+                email: { type: 'string', nullable: true },
+                name: { type: 'string' },
+                picture: { type: 'string', nullable: true }
+              }
+            },
+            sessionToken: { type: 'string' },
+            refreshToken: { type: 'string' }
+          }
+        },
+        400: {
+          type: 'object',
+          properties: {
+            error: { type: 'string' }
+          }
+        },
+        401: {
+          type: 'object',
+          properties: {
+            error: { type: 'string' }
+          }
+        }
+      }
+    }
+  }, async (request, reply) => {
+    const { refreshToken } = request.body as { refreshToken: string };
+
+    if (!refreshToken) {
+      return reply.status(400).send({ error: 'Refresh Token is required' });
+    }
+
+    try {
+      const user = await authService.refreshAccessToken(refreshToken);
+      return { 
+        user, 
+        sessionToken: user.session_token,
+        refreshToken: user.refresh_token
+      };
+    } catch (error) {
+      request.log.error(error);
+      return reply.status(401).send({ error: 'Invalid refresh token' });
     }
   });
 }

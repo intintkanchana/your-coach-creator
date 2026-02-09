@@ -8,6 +8,7 @@ import { AppHeader } from "@/components/common/AppHeader";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/lib/auth-context";
 import { API_BASE_URL } from "@/config";
+import { apiFetch } from "@/lib/api";
 import {
   Dialog,
   DialogContent,
@@ -56,17 +57,7 @@ const CoachList = () => {
   useEffect(() => {
     const fetchCoaches = async () => {
       try {
-        const token = localStorage.getItem("sessionToken");
-        if (!token) {
-          setIsLoading(false);
-          return;
-        }
-
-        const response = await fetch(`${API_BASE_URL}/api/coaches`, {
-          headers: {
-            "Authorization": `Bearer ${token}`
-          }
-        });
+        const response = await apiFetch(`/api/coaches`);
 
         if (response.ok) {
           const data = await response.json();
@@ -111,12 +102,8 @@ const CoachList = () => {
 
     setIsDeleting(true);
     try {
-      const token = localStorage.getItem("sessionToken");
-      const response = await fetch(`${API_BASE_URL}/api/coaches/${coachToDelete.id}`, {
-        method: "DELETE",
-        headers: {
-          "Authorization": `Bearer ${token}`
-        }
+      const response = await apiFetch(`/api/coaches/${coachToDelete.id}`, {
+        method: "DELETE"
       });
 
       if (response.ok) {
