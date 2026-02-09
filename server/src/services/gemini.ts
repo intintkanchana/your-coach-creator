@@ -1,6 +1,8 @@
 import { GoogleGenAI } from '@google/genai';
 import { CONFIG } from '../config';
 
+const MODEL_NAME = 'gemini-3-flash-preview';
+
 // Initialize GenAI Client
 const client = new GoogleGenAI({ apiKey: CONFIG.GEMINI_API_KEY || '' });
 
@@ -27,7 +29,7 @@ export const geminiService = {
 
     try {
       const response = await client.models.generateContent({
-        model: 'gemini-2.5-flash',
+        model: MODEL_NAME,
         config: {
           systemInstruction: systemInstruction,
         },
@@ -48,7 +50,7 @@ export const geminiService = {
 
     try {
       const response = await client.models.generateContent({
-        model: 'gemini-2.5-flash',
+        model: MODEL_NAME,
         config: {
           systemInstruction: systemInstruction,
           responseMimeType: 'application/json',
