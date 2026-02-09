@@ -11,6 +11,7 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { API_BASE_URL } from "@/config";
+import { apiFetch } from "@/lib/api";
 import { Coach } from "@/types/coach";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@/components/ui/data-table";
@@ -63,16 +64,9 @@ export default function ActivityProfile() {
         const fetchLogs = async () => {
             if (!coachId) return;
             try {
-                const token = localStorage.getItem("sessionToken");
-                if (!token) throw new Error("No session token");
-
                 const [logsRes, coachRes] = await Promise.all([
-                    fetch(`${API_BASE_URL}/api/chat/logs/${coachId}`, {
-                        headers: { "Authorization": `Bearer ${token}` }
-                    }),
-                    fetch(`${API_BASE_URL}/api/coaches/${coachId}`, {
-                        headers: { "Authorization": `Bearer ${token}` }
-                    })
+                    apiFetch(`/api/chat/logs/${coachId}`),
+                    apiFetch(`/api/coaches/${coachId}`)
                 ]);
 
                 if (!logsRes.ok || !coachRes.ok) throw new Error("Failed to fetch data");

@@ -12,7 +12,12 @@ export interface User {
   name: string;
   picture?: string;
   session_token?: string;
+  refresh_token?: string;
+  token_expires_at?: Date | string;
 }
+
+const ACCESS_TOKEN_TTL = 60 * 60 * 1000; // 1 hour
+const REFRESH_TOKEN_TTL = 30 * 24 * 60 * 60 * 1000; // 30 days
 
 export const authService = {
   async verifyGoogleToken(token: string) {
@@ -48,6 +53,8 @@ export const authService = {
 
   loginUser: async (googleUser: { google_id: string; email?: string; name: string; picture?: string }) => {
     const sessionToken = crypto.randomUUID();
+    const refreshToken = crypto.randomUUID();
+    const tokenExpiresAt = new Date(Date.now() + ACCESS_TOKEN_TTL).toISOString();
     
     // UPSERT is not standard SQL. SQLite supports it. Postgres supports it.
     // better-sqlite3 uses @params. 
@@ -61,10 +68,12 @@ export const authService = {
     // valid for both sqlite and postgres (pg supports RETURNING).
     
     const user = await db.get<User>(`
-      INSERT INTO users AS u (google_id, email, name, picture, session_token)
-      VALUES (@google_id, @user_email, @name, @picture, @session_token)
+      INSERT INTO users AS u (google_id, email, name, picture, session_token, refresh_token, token_expires_at)
+      VALUES (@google_id, @user_email, @name, @picture, @session_token, @refresh_token, @token_expires_at)
       ON CONFLICT(google_id) DO UPDATE SET
         session_token = @session_token,
+        refresh_token = @refresh_token,
+        token_expires_at = @token_expires_at,
         name = @name,
         picture = @picture,
         email = COALESCE(NULLIF(@user_email, ''), u.email)
@@ -75,6 +84,8 @@ export const authService = {
       name: googleUser.name,
       picture: googleUser.picture || null,
       session_token: sessionToken,
+      refresh_token: refreshToken,
+      token_expires_at: tokenExpiresAt,
     });
     
     // user might be undefined if something went wrong, but with RETURNING it should be fine.
@@ -88,11 +99,23 @@ export const authService = {
 
   getUserByToken: async (token: string): Promise<User | undefined> => {
     // using ? parameter here. My adapter handles it.
-    return db.get<User>('SELECT * FROM users WHERE session_token = ?', [token]);
+    const user = await db.get<User>('SELECT * FROM users WHERE session_token = ?', [token]);
+    
+    if (user && user.token_expires_at) {
+        const expiresAt = new Date(user.token_expires_at).getTime();
+        if (Date.now() > expiresAt) {
+            // Token expired
+            return undefined;
+        }
+    }
+    
+    return user;
   },
 
   loginGuest: async (nickname: string) => {
     const sessionToken = crypto.randomUUID();
+    const refreshToken = crypto.randomUUID();
+    const tokenExpiresAt = new Date(Date.now() + ACCESS_TOKEN_TTL).toISOString();
     const guestId = crypto.randomUUID();
     
     // Use placeholders for SQLite compatibility where columns might be NOT NULL
@@ -100,14 +123,16 @@ export const authService = {
     const emailPlaceholder = `guest_${guestId}@guest.local`;
     
     const user = await db.get<User>(`
-      INSERT INTO users (google_id, email, name, picture, session_token)
-      VALUES (@google_id, @email, @name, NULL, @session_token)
+      INSERT INTO users (google_id, email, name, picture, session_token, refresh_token, token_expires_at)
+      VALUES (@google_id, @email, @name, NULL, @session_token, @refresh_token, @token_expires_at)
       RETURNING *
     `, {
       google_id: googleIdPlaceholder,
       email: emailPlaceholder,
       name: nickname,
       session_token: sessionToken,
+      refresh_token: refreshToken,
+      token_expires_at: tokenExpiresAt,
     });
     
     if (!user) {
@@ -115,5 +140,38 @@ export const authService = {
     }
 
     return user;
+  },
+
+  refreshAccessToken: async (refreshToken: string) => {
+    const user = await db.get<User>('SELECT * FROM users WHERE refresh_token = ?', [refreshToken]);
+
+    if (!user) {
+        throw new Error('Invalid refresh token');
+    }
+
+    // Generate new tokens (Rotate refresh token for security)
+    const newSessionToken = crypto.randomUUID();
+    const newRefreshToken = crypto.randomUUID();
+    const newTokenExpiresAt = new Date(Date.now() + ACCESS_TOKEN_TTL).toISOString();
+
+    const updatedUser = await db.get<User>(`
+        UPDATE users 
+        SET session_token = @session_token, 
+            refresh_token = @refresh_token, 
+            token_expires_at = @token_expires_at
+        WHERE id = @id
+        RETURNING *
+    `, {
+        session_token: newSessionToken,
+        refresh_token: newRefreshToken,
+        token_expires_at: newTokenExpiresAt,
+        id: user.id
+    });
+
+    if (!updatedUser) {
+        throw new Error('Failed to refresh token');
+    }
+
+    return updatedUser;
   }
 };

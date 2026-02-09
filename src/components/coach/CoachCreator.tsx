@@ -13,6 +13,7 @@ import { useAuth } from "@/lib/auth-context";
 import { useToast } from "@/components/ui/use-toast";
 
 import { API_BASE_URL } from "@/config";
+import { apiFetch } from "@/lib/api";
 
 
 const initialConfig: CoachConfig = {
@@ -64,11 +65,8 @@ export function CoachCreator() {
       const token = localStorage.getItem("sessionToken");
       if (!token) return;
 
-      const response = await fetch(`${API_URL}/coach/create/inspirations`, {
-        method: "GET",
-        headers: {
-          "Authorization": token,
-        },
+      const response = await apiFetch(`/api/coach/create/inspirations`, {
+        method: "GET"
       });
 
       if (response.ok) {
@@ -91,12 +89,8 @@ export function CoachCreator() {
       const token = localStorage.getItem("sessionToken");
       if (!token) throw new Error("No session token found");
 
-      const response = await fetch(`${API_URL}/coach/create/chat`, {
+      const response = await apiFetch(`/api/coach/create/chat`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": token,
-        },
         body: JSON.stringify({ message: goal, reset: true }),
       });
 
@@ -148,12 +142,8 @@ export function CoachCreator() {
       if (!token) throw new Error("No session token found");
 
       // 1. Advance step to save direction
-      await fetch(`${API_URL}/coach/create/advance`, {
+      await apiFetch(`/api/coach/create/advance`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": token,
-        },
         body: JSON.stringify({
           nextStep: "1.2_CREATE_PERSONA",
           data: { selected_activity_name: direction.title }
@@ -163,12 +153,8 @@ export function CoachCreator() {
       setConfig((prev) => ({ ...prev, direction }));
 
       // 2. Generate Personas
-      const response = await fetch(`${API_URL}/coach/create/chat`, {
+      const response = await apiFetch(`/api/coach/create/chat`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": token,
-        },
         body: JSON.stringify({ message: { selected_activity_name: direction.title } }),
       });
 
@@ -208,12 +194,8 @@ export function CoachCreator() {
       if (!token) throw new Error("No session token found");
 
       // 1. Advance step to save persona
-      await fetch(`${API_URL}/coach/create/advance`, {
+      await apiFetch(`/api/coach/create/advance`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": token,
-        },
         body: JSON.stringify({
           nextStep: "2.1_SUGGEST_VITAL_SIGNS",
           data: {
@@ -227,12 +209,8 @@ export function CoachCreator() {
       setConfig((prev) => ({ ...prev, persona }));
 
       // 2. Generate Vital Signs
-      const response = await fetch(`${API_URL}/coach/create/chat`, {
+      const response = await apiFetch(`/api/coach/create/chat`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": token,
-        },
         body: JSON.stringify({
           message: {
             selected_activity_description: config.direction?.description
@@ -286,12 +264,8 @@ export function CoachCreator() {
       if (!token) throw new Error("No session token found");
 
       // 1. Advance step to save vitals
-      await fetch(`${API_URL}/coach/create/advance`, {
+      await apiFetch(`/api/coach/create/advance`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": token,
-        },
         body: JSON.stringify({
           nextStep: "3.0_SUMMARIZE_COACH",
           data: {
@@ -322,12 +296,8 @@ export function CoachCreator() {
       const token = localStorage.getItem("sessionToken");
       if (!token) throw new Error("No session token found");
 
-      const response = await fetch(`${API_URL}/coach/create/chat`, {
+      const response = await apiFetch(`/api/coach/create/chat`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": token,
-        },
         body: JSON.stringify({
           message: {
             selected_activity_description: customGoal,
@@ -379,12 +349,8 @@ Your goal is to help the user track: ${config.vitalSigns?.filter(v => v.selected
 User Goal: ${config.goal}`;
 
       // 1. Create the coach
-      const response = await fetch(`${API_URL}/coaches`, {
+      const response = await apiFetch(`/api/coaches`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": token,
-        },
         body: JSON.stringify({
           name: config.persona?.name,
           type: config.direction?.title,
@@ -412,12 +378,8 @@ User Goal: ${config.goal}`;
       console.log("Coach created:", data);
 
       // 2. Clear the creation session
-      await fetch(`${API_URL}/coach/create/chat`, {
+      await apiFetch(`/api/coach/create/chat`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": token,
-        },
         body: JSON.stringify({ message: "", reset: true }),
       });
 
