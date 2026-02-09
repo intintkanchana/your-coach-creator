@@ -21,42 +21,7 @@ We leveraged the cutting-edge **Gemini 3.0 Flash** model to build a fast, reason
 
 ### System Architecture
 
-```mermaid
----
-config:
-  theme: neutral
-  look: neo
-  layout: elk
----
-flowchart TB
- subgraph User_Experience["User Experience"]
-        User["End User"]
-        Browser["Frontend: React + Vite + Tailwind"]
-  end
- subgraph Server_Logic["Backend Architecture"]
-        API["Fastify API Server"]
-        Agent_Scope["Agent 1: Scope Shrinker"]
-        Agent_Schema["Agent 2: Lab Technician"]
-        Agent_Coach["Agent 3: Active Coach Engine"]
-        Database[("SQLite (Dev) / Postgres (Prod)")]
-  end
- subgraph AI_Model["Google Intelligence"]
-        Gemini["Google Gemini 3.0 Flash"]
-  end
-    User -- "1. Goal Input" --> Browser
-    Browser -- POST /create --> API
-    API -- Route Request --> Agent_Scope & Agent_Schema & Agent_Coach
-    Agent_Scope -- Prompt: Break down goal --> Gemini
-    Gemini -- JSON: Tracer Bullets --> Agent_Scope
-    Browser -- "2. Select Option" --> API
-    Agent_Schema -- Prompt: Define Metadata --> Gemini
-    Gemini -- JSON: Vital Signs Schema --> Agent_Schema
-    Agent_Schema -- Save Config --> Database
-    Browser -- "3. Chat/Log Data" --> API
-    Agent_Coach -- Fetch Context --> Database
-    Agent_Coach -- Prompt: Generate Feedback --> Gemini
-    Gemini -- JSON: Response & Actions --> Agent_Coach
-```
+[![](https://mermaid.ink/img/pako:eNqFVNtOGzEQ_ZWRHypQk5AbIdkHpFwIooJCSdqHshVyvJNdKxt76_VyKeLfO_aGXCBV85Kd8TnHc_ULEzpCFrBqtRoqodVcxkGoAGyCSwwAo-KpGnGzcL5U60UACrU3-LMuLCFSOvPseaofRcKNhemAEHkxiw3PEvieo7k_e8rQSFQC70LmPLDxhOyXUyx_7owgZyrynztnA6Mfy-Ox0cqiigK4RS4sfIYf0iL9TblMH6WKVjyCbIcyQfNAwVzqWApSGXCxIAT0jUiILmxhdoPp31y4y3hu5fzZWSuFXVCMyt5PhM5cbt6CRgDeAZPESLX4B4NqzNeUZgCXfAZTFImSQnK1hzLUXCRrRiuAvrDyAcH74UzFUu0mMOKWz3iOdwchm3y7dDU6GOHDIRzBjc5tbDCHgxujo8OQHe6rWP_i_oomJKVLz7WOU4QLKnyayvhD585xKZXcAEsbWrU6jFOeJzstWXUaqlUIWaMG55qnJJ0VNmTkPH3rdQldGQ59cz2ZwpEwyCkXB6SulCDXHgLc0lgijcXvAnNbIjYNgk87xV-bvoArmS20u8_oZUZzPqAbFxDpRwWxi9UJlxmWtFW2xPgyuf4awNRwQREPijRFm7-P40NaIWvWaLhSGkK4zqzUalWHTXrbcW8FNsI5dR2u0PKIuv3fwGhRKPyJjFUOa7XTHfn9F064nzT3RHjG22ztyaVVg2HC7REtmoftz6WcWiKM0dLH0K30k92j_Q7-lvk5KjRuDMaI0Yx2-b-532KeaZX7MRCuyNuN8fqswmIjIxbMeZpjhS3RLLmz2YuTDJl_GEMW0Kd_F1moXomUcfVT6yULrCmIZnQRJ2uRIqPO4Ehy2qnl2mtoE9AMdaEsC1rdhhdhwQt7YkGzVzs5qXfr3Waj12iedCvsmQXVTqvWO253G-1Op16ng9Zrhf3xt9ZrvfbxSavXbLYbnXa91-5UGEbSanNVvu_-mX_9C-h_3EM?type=png)](https://mermaid.live/edit#pako:eNqFVNtOGzEQ_ZWRHypQk5AbIdkHpFwIooJCSdqHshVyvJNdKxt76_VyKeLfO_aGXCBV85Kd8TnHc_ULEzpCFrBqtRoqodVcxkGoAGyCSwwAo-KpGnGzcL5U60UACrU3-LMuLCFSOvPseaofRcKNhemAEHkxiw3PEvieo7k_e8rQSFQC70LmPLDxhOyXUyx_7owgZyrynztnA6Mfy-Ox0cqiigK4RS4sfIYf0iL9TblMH6WKVjyCbIcyQfNAwVzqWApSGXCxIAT0jUiILmxhdoPp31y4y3hu5fzZWSuFXVCMyt5PhM5cbt6CRgDeAZPESLX4B4NqzNeUZgCXfAZTFImSQnK1hzLUXCRrRiuAvrDyAcH74UzFUu0mMOKWz3iOdwchm3y7dDU6GOHDIRzBjc5tbDCHgxujo8OQHe6rWP_i_oomJKVLz7WOU4QLKnyayvhD585xKZXcAEsbWrU6jFOeJzstWXUaqlUIWaMG55qnJJ0VNmTkPH3rdQldGQ59cz2ZwpEwyCkXB6SulCDXHgLc0lgijcXvAnNbIjYNgk87xV-bvoArmS20u8_oZUZzPqAbFxDpRwWxi9UJlxmWtFW2xPgyuf4awNRwQREPijRFm7-P40NaIWvWaLhSGkK4zqzUalWHTXrbcW8FNsI5dR2u0PKIuv3fwGhRKPyJjFUOa7XTHfn9F064nzT3RHjG22ztyaVVg2HC7REtmoftz6WcWiKM0dLH0K30k92j_Q7-lvk5KjRuDMaI0Yx2-b-532KeaZX7MRCuyNuN8fqswmIjIxbMeZpjhS3RLLmz2YuTDJl_GEMW0Kd_F1moXomUcfVT6yULrCmIZnQRJ2uRIqPO4Ehy2qnl2mtoE9AMdaEsC1rdhhdhwQt7YkGzVzs5qXfr3Waj12iedCvsmQXVTqvWO253G-1Op16ng9Zrhf3xt9ZrvfbxSavXbLYbnXa91-5UGEbSanNVvu_-mX_9C-h_3EM)
 
 ### Key Technical Features
 -   **Model**: Exclusively uses `gemini-3-flash-preview` via `@google/genai` SDK for sub-second latency and complex reasoning.
