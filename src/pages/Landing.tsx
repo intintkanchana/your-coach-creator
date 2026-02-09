@@ -132,7 +132,6 @@ const Landing = () => {
               </svg>
             )}
             {isLoginLoading ? "Signing in..." : "Continue with Google"}
-            {isLoginLoading ? "Signing in..." : "Continue with Google"}
           </Button>
 
           <div className="flex items-center gap-4 w-full my-4">
