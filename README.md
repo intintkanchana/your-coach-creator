@@ -2,6 +2,11 @@
 
 **Your Coach** is an AI-native life coaching platform that doesn't just chat—it *architects* a custom coaching experience. Using a multi-agent system powered by **Google Gemini 3.0 Flash**, it transforms vague user goals into precise, data-driven tracking protocols and generates a unique AI persona to keep you accountable.
 
+- Youtube Demo Video: https://youtu.be/PPwXqW2FgnU
+- Devpost: https://devpost.com/software/imperfection (Old name of the project)
+
+![Your Coach Screenshot](assets/wide-cover.png)
+
 ---
 
 ## 💡 Innovation: The "Meta-Coach" Architecture
