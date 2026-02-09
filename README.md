@@ -1,46 +1,85 @@
-# Your Coach (powered by Google Gemini)
+# Your Coach (Powered by Gemini 3.0)
 
-![Banner](https://via.placeholder.com/1200x300?text=Your+Coach+AI)
+**Your Coach** is an AI-native life coaching platform that doesn't just chat—it *architects* a custom coaching experience. Using a multi-agent system powered by **Google Gemini 3.0 Flash**, it transforms vague user goals into precise, data-driven tracking protocols and generates a unique AI persona to keep you accountable.
 
-## 💡 Innovation: The "Meta-Coach"
+---
 
-Most AI coaching apps give you a generic chatbot. **Your Coach** is different.
+## 💡 Innovation: The "Meta-Coach" Architecture
 
-It uses an advanced **Creation Agent** (powered by **Google Gemini 2.5 Flash**) to interview you, analyze your vague goals, and architect a **custom AI persona** with:
-1.  **"Tracer Bullet" Experiments**: It breaks abstract goals ("Get fit") into tiny, measurable actions ("Walk 10m daily").
-2.  **Data-Driven Custom Schema**: It designs a unique database schema (e.g., "Gap distance in cm" vs "Mood 1-5") tailored specifically for your habit.
-3.  **Unique Personality**: From "Drill Sergeant" to "Empathetic Listener", it generates a bio and voice that motivates *you*.
+Most AI coaching apps give you a generic chatbot. **Your Coach** is different. It uses a sophisticated **"Creation Agent"** pipeline to design the coach *for* you.
 
-## 🛠️ Technical Execution
+### The "Creation Agent" Workflow (Powered by Gemini 3.0)
+1.  **Step 1: The Scope Shrinker**: Analyzes abstract goals (e.g., "Get fit") and breaks them down into "Tracer Bullet" experiments (e.g., "10m Walk" vs "50 Pushups").
+2.  **Step 2: The Lab Technician**: Dynamically generates a **custom database schema** (Vital Signs) tailored to the activity. It decides if you should track "Gap distance in cm" or "Mood (1-5)" based on the context.
+3.  **Step 3: The Architect of Encouragement**: Crafts a bespoke **AI Persona** (including bio, voice, and motto) that matches your specific motivation style.
 
-We leveraged the full power of **Google Gemini 2.5 Flash** for high-speed, low-latency agent reasoning to generate complex JSON structures in real-time.
+---
 
-### Architecture
+## 🛠️ Technical Execution & Gemini 3.0 Integration
+
+We leveraged the cutting-edge **Gemini 3.0 Flash** model to build a fast, reasoning-heavy backend that goes beyond simple text generation.
+
+### System Architecture
 
 ```mermaid
-graph TD
-    User[User] -->|Chat| Frontend[React + Vite]
-    Frontend -->|API| Backend[Fastify API]
-    Backend -->|Prompt| Gemini[Google Gemini 2.5 Flash]
-    Gemini -->|JSON Schema| Backend
-    Backend -->|Store| DB[(SQLite)]
-    DB -->|Fetch| AB[Activity Profile]
-    AB -->|Dynamic Columns| Table[TanStack Table]
+---
+config:
+  theme: neutral
+  look: neo
+  layout: elk
+---
+flowchart TB
+ subgraph User_Experience["User Experience"]
+        User["End User"]
+        Browser["Frontend: React + Vite + Tailwind"]
+  end
+ subgraph Server_Logic["Backend Architecture"]
+        API["Fastify API Server"]
+        Agent_Scope["Agent 1: Scope Shrinker"]
+        Agent_Schema["Agent 2: Lab Technician"]
+        Agent_Coach["Agent 3: Active Coach Engine"]
+        Database[("SQLite (Dev) / Postgres (Prod)")]
+  end
+ subgraph AI_Model["Google Intelligence"]
+        Gemini["Google Gemini 3.0 Flash"]
+  end
+    User -- "1. Goal Input" --> Browser
+    Browser -- POST /create --> API
+    API -- Route Request --> Agent_Scope & Agent_Schema & Agent_Coach
+    Agent_Scope -- Prompt: Break down goal --> Gemini
+    Gemini -- JSON: Tracer Bullets --> Agent_Scope
+    Browser -- "2. Select Option" --> API
+    Agent_Schema -- Prompt: Define Metadata --> Gemini
+    Gemini -- JSON: Vital Signs Schema --> Agent_Schema
+    Agent_Schema -- Save Config --> Database
+    Browser -- "3. Chat/Log Data" --> API
+    Agent_Coach -- Fetch Context --> Database
+    Agent_Coach -- Prompt: Generate Feedback --> Gemini
+    Gemini -- JSON: Response & Actions --> Agent_Coach
 ```
 
-### Tech Stack
--   **AI**: Google Gemini 2.5 Flash (via `@google/genai`)
--   **Backend**: Fastify (Node.js), TypeScript, SQLite (`better-sqlite3`)
--   **Frontend**: React, Vite, Tailwind CSS, shadcn/ui, TanStack Table
--   **Key Feature**: Dynamic JSON-to-Table rendering for custom habit metrics.
+### Key Technical Features
+-   **Model**: Exclusively uses `gemini-3-flash-preview` via `@google/genai` SDK for sub-second latency and complex reasoning.
+-   **Structured Intelligence**: Heavy reliance on `responseMimeType: 'application/json'` allows Gemini to control the UI directly—defining table columns, form inputs, and visualization types on the fly.
+-   **Multi-Agent System**:
+    -   **Intention Classifier**: Real-time routing of user messages between "Logging Mode" (data entry) and "Consulting Mode" (advice).
+    -   **Insight Engine**: Analyzes historical log data to generate "Deep Dive" observations and specific "Next Actions".
+    -   **Active Coach Engine**: Uses "Contextual Memory" to generate proactive greetings that reference your *specific* previous results (e.g., "How are those hips after the 15cm stretch?").
+
+### Architecture Stack
+-   **AI**: Google Gemini 3.0 Flash (`@google/genai`)
+-   **Backend**: Fastify (Node.js), TypeScript, SQLite (Dev) / PostgreSQL (Prod)
+-   **Frontend**: React, Vite, Tailwind CSS, shadcn/ui
+-   **Data**: Dynamic JSON-to-Table rendering for custom habit metrics.
+
+---
 
 ## 🚀 Potential Impact
 
-**The Problem**: 92% of New Year's resolutions fail because goals are too vague and feedback loops are too slow.
-**The Solution**: By turning abstract goals into **measurable data points** and providing an **accountability partner (AI Coach)** that is available 24/7, we democratize elite-level coaching for everyone.
+**The Problem**: 92% of New Year's resolutions fail because goals are too vague ("Get healthy") and feedback loops are too slow.
+**The Solution**: By turning abstract desires into **measurable data points** and providing an **accountability partner (AI Coach)** that is available 24/7, we democratize elite-level coaching. "Your Coach" solves the "Cold Start Problem" of habit tracking by doing the setup work for you.
 
-## ✨ Wow Factor: TBD
-
+---
 
 ## 📦 Getting Started
 
@@ -53,8 +92,8 @@ graph TD
 1.  **Clone & Install**
     ```bash
     git clone <repo>
-    npm install       # Root (Frontend)
-    cd server && npm install # Backend
+    npm install       # Install Frontend dependencies
+    cd server && npm install # Install Backend dependencies
     ```
 
 2.  **Configure Backend**
@@ -62,7 +101,6 @@ graph TD
     ```env
     GOOGLE_API_KEY=your_gemini_key
     PORT=4000
-    GOOGLE_CLIENT_ID=your_google_client_id
     ```
 
 3.  **Start Development Servers**
@@ -80,15 +118,15 @@ graph TD
     # Frontend starts at http://localhost:5173
     ```
 
+---
+
 ## 🤖 Built with AI
 
-This project was developed during a hackathon using cutting-edge AI tools to explore the future of "vibe coding":
+This project was developed during a hackathon to explore the future of **"vibe coding"**:
 
--   **Antigravity**: The entire development process was orchestrated by the Antigravity agent, allowing us to focus on high-level architecture and creative direction while the AI handled implementation.
+-   **Antigravity**: The entire development process was orchestrated by the Antigravity agent, allowing us to focus on high-level architecture and creative direction.
+-   **Gemini 3.0**: Powers the core intelligence, from generating database schemas to roleplaying complex personas.
 -   **Lovable**: Used for rapid prototyping of the initial UI components.
--   **Google Gemini**: Powers the core "Creation Agent" logic within the app itself.
-
-We built this to learn how AI agents can accelerate software development and to experience the "vibe coding" workflow firsthand.
 
 ## 📜 License
 MIT
