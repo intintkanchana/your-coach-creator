@@ -22,6 +22,9 @@ export function ChatInput({ onSend, disabled, onHeightChange }: ChatInputProps) 
       const newHeight = Math.min(scrollHeight, 150);
       textareaRef.current.style.height = `${newHeight}px`;
 
+      // Only show scrollbar if content exceeds visible height
+      textareaRef.current.style.overflowY = scrollHeight > newHeight ? "auto" : "hidden";
+
       if (onHeightChange) {
         onHeightChange(newHeight);
       }
@@ -66,7 +69,7 @@ export function ChatInput({ onSend, disabled, onHeightChange }: ChatInputProps) 
             placeholder="Type a message..."
             disabled={disabled}
             rows={1}
-            className="w-full resize-none overflow-y-auto min-h-[40px] max-h-[150px] rounded-2xl border border-border/50 bg-muted/30 px-4 py-[10px] text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 block"
+            className="w-full resize-none overflow-hidden scrollbar-minimal min-h-[40px] max-h-[150px] rounded-2xl border border-border/50 bg-muted/30 px-4 py-[10px] text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 block"
           />
         </div>
 

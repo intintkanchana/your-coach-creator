@@ -533,6 +533,16 @@ export default function CoachChat() {
               timestamp: new Date()
             }
           ]);
+
+          // Quick Actions
+          if (data.quick_actions && Array.isArray(data.quick_actions)) {
+            setTimeout(() => {
+              setQuickActions(data.quick_actions.map((qa: string, idx: number) => ({
+                id: `qa-${Date.now()}-${idx}`,
+                label: qa
+              })));
+            }, 800);
+          }
         }
       }
     } catch (err) {

@@ -171,12 +171,19 @@ To ensure readability on mobile screens, you must adhere to the **"One Highlight
 4. **Sign-off:**
    - The final encouraging sentence or question must be on its own line at the bottom, separate from any lists or blocks.
 
+[QUICK ACTION LOGIC]
+If intention is "GENERAL_CONSULT", generate 3 short "Pill" suggestions for the user to reply with:
+- Option 1: A clarifying question or specific detail request.
+- Option 2: A related topic inquiry.
+- Option 3: A "Tell me more" or "Why?" type follow-up.
+
 [OUTPUT FORMAT]
 Valid JSON only.
 {
   "original_request_text": "${userInput}",
   "intention": "LOG_NEW_ACTIVITY | GENERAL_CONSULT",
-  "response_text": "String (The reply to the user, strictly in the voice of ${coach.name}, following VISUAL STRUCTURE RULES)"
+  "response_text": "String (The reply to the user, strictly in the voice of ${coach.name}, following VISUAL STRUCTURE RULES)",
+  "quick_actions": ["String (Action 1)", "String (Action 2)", "String (Action 3)"]
 }
     `;
 
