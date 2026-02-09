@@ -417,6 +417,9 @@ export default function CoachChat() {
   };
 
   const handleSendMessage = async (content: string) => {
+    // Clear quick actions when user sends a message
+    setQuickActions([]);
+
     // Optimistically add user message
     const userMsgId = `user-${Date.now()}`;
     setMessages((prev) => [
