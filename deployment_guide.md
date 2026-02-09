@@ -15,32 +15,25 @@ This guide outlines the steps to deploy your application (Frontend & Backend) to
 
 1.  **Create a PostgreSQL Instance**:
     ```bash
-    gcloud sql instances create coach-creator-db \
+    gcloud sql instances create CLOUD_SQL_INSTANCE \
         --database-version=POSTGRES_15 \
         --cpu=1 \
         --memory=4GiB \
         --region=asia-northeast1
     ```
-    *(Adjust region as needed)*
 
 2.  **Set Password**:
     ```bash
     gcloud sql users set-password postgres \
-        --instance=coach-creator-db \
-        --password=Z11q5tXoFhQihi
+        --instance=CLOUD_SQL_INSTANCE \
+        --password=CLOUD_SQL_PASSWORD
     ```
 
 3.  **Create Database**:
     ```bash
     gcloud sql databases create coach_db \
-        --instance=coach-creator-db
+        --instance=CLOUD_SQL_INSTANCE
     ```
-
-4.  **Get Connection Name**:
-    ```bash
-    gcloud sql instances describe coach-creator-db --format='value(connectionName)'
-    ```
-    *Save this (e.g., `project-id:region:instance-name`) for later.*
 
 ## 2. Create Artifact Registry
 
@@ -58,20 +51,20 @@ gcloud artifacts repositories create coach-creator \
     ```bash
     # From the root directory
     cd server
-    gcloud builds submit --tag asia-northeast1-docker.pkg.dev/gemini-hack-485913/coach-creator/server:latest .
+    gcloud builds submit --tag asia-northeast1-docker.pkg.dev/PROJECT_ID/coach-creator/server:latest .
     ```
 
 2.  **Deploy to Cloud Run**:
     ```bash
     gcloud run deploy server \
-        --image asia-northeast1-docker.pkg.dev/gemini-hack-485913/coach-creator/server:latest \
+        --image asia-northeast1-docker.pkg.dev/PROJECT_ID/coach-creator/server:latest \
         --region asia-northeast1 \
         --allow-unauthenticated \
-        --add-cloudsql-instances gemini-hack-485913:asia-northeast1:coach-creator-db \
+        --add-cloudsql-instances PROJECT_ID:asia-northeast1:CLOUD_SQL_INSTANCE \
         --set-env-vars "DB_TYPE=postgres" \
-        --set-env-vars "DATABASE_URL=postgres://postgres:Z11q5tXoFhQihi@/coach_db?host=/cloudsql/gemini-hack-485913:asia-northeast1:coach-creator-db" \
-        --set-env-vars "GEMINI_API_KEY=AIzaSyBZIUd_gDDxhUrLpo9CLK8CFmGVNXGo1cw" \
-        --set-env-vars "GOOGLE_CLIENT_ID=204524688402-p1004vh1jovje3mnm0trubhl6ulnr8cd.apps.googleusercontent.com"
+        --set-env-vars "DATABASE_URL=postgres://postgres:CLOUD_SQL_PASSWORD@/coach_db?host=/cloudsql/PROJECT_ID:asia-northeast1:CLOUD_SQL_INSTANCE" \
+        --set-env-vars "GEMINI_API_KEY=GEMINI_API_KEY" \
+        --set-env-vars "GOOGLE_CLIENT_ID=GOOGLE_CLIENT_ID"
     ```
 
 3.  **Get Backend URL**:
@@ -81,7 +74,7 @@ Note **Only Update Server**:
     ```bash
     gcloud run services update server \
         --region asia-northeast1 \
-        --update-env-vars "DATABASE_URL=postgres://postgres:Z11q5tXoFhQihi@/coach_db?host=/cloudsql/gemini-hack-485913:asia-northeast1:coach-creator-db"
+        --update-env-vars "DATABASE_URL=postgres://postgres:CLOUD_SQL_PASSWORD@/coach_db?host=/cloudsql/PROJECT_ID:asia-northeast1:CLOUD_SQL_INSTANCE"
     ```
 
 ## 4. Deploy Frontend
@@ -96,7 +89,7 @@ Note **Only Update Server**:
 2.  **Deploy to Cloud Run**:
     ```bash
     gcloud run deploy frontend \
-        --image gcr.io/gemini-hack-485913/coach-creator/frontend:latest \
+        --image gcr.io/PROJECT_ID/coach-creator/frontend:latest \
         --region asia-northeast1 \
         --allow-unauthenticated
     ```

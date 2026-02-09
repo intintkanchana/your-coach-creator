@@ -10,5 +10,5 @@ steps:
 images:
   - '$_IMAGE_NAME'
 substitutions:
-  _VITE_API_URL: 'https://server-204524688402.asia-northeast1.run.app' # Default value
-  _IMAGE_NAME: 'gcr.io/gemini-hack-485913/coach-creator/frontend:latest' # Default value
+  _VITE_API_URL: 'https://server-204524688402.asia-northeast1.run.app'
+  _IMAGE_NAME: 'gcr.io/gemini-hack-485913/coach-creator/frontend:latest'
