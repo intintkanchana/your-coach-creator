@@ -23,7 +23,7 @@ export function AnalysisDisplay({ data }: AnalysisDisplayProps) {
 
             {/* Vital Sign Feedback Grid */}
             {data.vital_sign_feedback && data.vital_sign_feedback.length > 0 && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-3">
                     {data.vital_sign_feedback.map((item, index) => (
                         <motion.div
                             key={item.label}
@@ -39,6 +39,7 @@ export function AnalysisDisplay({ data }: AnalysisDisplayProps) {
                                 </span>
                                 <span className="bg-primary/10 text-primary text-sm font-bold px-2 py-1 rounded-md">
                                     {item.value === true ? 'Yes' : item.value === false ? 'No' : item.value}
+                                    {item.unit && <span className="text-xs ml-1 font-normal opacity-70">{item.unit}</span>}
                                 </span>
                             </div>
                             <p className="text-sm text-card-foreground leading-snug">

@@ -14,6 +14,7 @@ export interface AnalysisData {
     label: string;
     value: number | string | boolean;
     emoji?: string;
+    unit?: string;
     comment: string;
   }[];
   deep_dive_insights: string[];

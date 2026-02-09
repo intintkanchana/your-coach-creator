@@ -7,8 +7,8 @@ const client = new OAuth2Client(CONFIG.GOOGLE_CLIENT_ID);
 
 export interface User {
   id: number;
-  google_id: string;
-  email: string;
+  google_id?: string;
+  email?: string;
   name: string;
   picture?: string;
   session_token?: string;
@@ -89,5 +89,31 @@ export const authService = {
   getUserByToken: async (token: string): Promise<User | undefined> => {
     // using ? parameter here. My adapter handles it.
     return db.get<User>('SELECT * FROM users WHERE session_token = ?', [token]);
+  },
+
+  loginGuest: async (nickname: string) => {
+    const sessionToken = crypto.randomUUID();
+    const guestId = crypto.randomUUID();
+    
+    // Use placeholders for SQLite compatibility where columns might be NOT NULL
+    const googleIdPlaceholder = `guest_${guestId}`;
+    const emailPlaceholder = `guest_${guestId}@guest.local`;
+    
+    const user = await db.get<User>(`
+      INSERT INTO users (google_id, email, name, picture, session_token)
+      VALUES (@google_id, @email, @name, NULL, @session_token)
+      RETURNING *
+    `, {
+      google_id: googleIdPlaceholder,
+      email: emailPlaceholder,
+      name: nickname,
+      session_token: sessionToken,
+    });
+    
+    if (!user) {
+        throw new Error('Failed to create guest user');
+    }
+
+    return user;
   }
 };

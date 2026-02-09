@@ -146,7 +146,9 @@ const CoachList = () => {
           <div className="flex items-center gap-2 mr-2">
             <Avatar className="h-8 w-8">
               <AvatarImage src={user?.picture} alt={user?.name} referrerPolicy="no-referrer" />
-              <AvatarFallback>{user?.name?.charAt(0) || "U"}</AvatarFallback>
+              <AvatarFallback className="bg-primary/10 text-primary">
+                {user?.name?.charAt(0).toUpperCase() || "U"}
+              </AvatarFallback>
             </Avatar>
             <div className="hidden sm:block text-sm font-medium">
               {user?.name}

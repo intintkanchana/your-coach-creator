@@ -1,14 +1,27 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { useAuth } from "@/lib/auth-context";
 import { useGoogleLogin } from "@react-oauth/google";
 
 const Landing = () => {
   const navigate = useNavigate();
-  const { login, user, isLoading: isAuthLoading } = useAuth();
+  const { login, loginAsGuest, user, isLoading: isAuthLoading } = useAuth();
   const [isLoginLoading, setIsLoginLoading] = useState(false);
+  const [showGuestDialog, setShowGuestDialog] = useState(false);
+  const [guestNickname, setGuestNickname] = useState("");
+  const [isGuestLoading, setIsGuestLoading] = useState(false);
 
   useEffect(() => {
     if (!isAuthLoading && user) {
@@ -36,6 +49,19 @@ const Landing = () => {
 
   const handleLoginClick = () => {
     googleLogin();
+  };
+
+  const handleGuestLogin = async () => {
+    if (!guestNickname.trim()) return;
+
+    setIsGuestLoading(true);
+    try {
+      await loginAsGuest(guestNickname);
+    } catch (e) {
+      console.error("Guest login failed", e);
+    } finally {
+      setIsGuestLoading(false);
+    }
   };
 
   return (
@@ -106,9 +132,63 @@ const Landing = () => {
               </svg>
             )}
             {isLoginLoading ? "Signing in..." : "Continue with Google"}
+            {isLoginLoading ? "Signing in..." : "Continue with Google"}
+          </Button>
+
+          <div className="flex items-center gap-4 w-full my-4">
+            <div className="h-px bg-border flex-1" />
+            <span className="text-muted-foreground text-sm">or</span>
+            <div className="h-px bg-border flex-1" />
+          </div>
+
+          <Button
+            onClick={() => setShowGuestDialog(true)}
+            variant="ghost"
+            className="w-full text-muted-foreground hover:text-foreground"
+          >
+            Continue as Guest
           </Button>
         </motion.div>
       </div>
+
+      <Dialog open={showGuestDialog} onOpenChange={setShowGuestDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Continue as Guest</DialogTitle>
+            <DialogDescription>
+              Enter a nickname to start your journey. Your data will be saved on this device.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <Input
+              placeholder="Your nickname (e.g. Ace, Sparky)"
+              value={guestNickname}
+              onChange={(e) => setGuestNickname(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  handleGuestLogin();
+                }
+              }}
+            />
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowGuestDialog(false)}
+              disabled={isGuestLoading}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleGuestLogin}
+              className="bg-chat-user text-white"
+              disabled={isGuestLoading || !guestNickname.trim()}
+            >
+              {isGuestLoading ? "Starting..." : "Let's Go"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

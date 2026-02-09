@@ -115,6 +115,21 @@ export default function CoachChat() {
                 const jsonStr = content.substring("JSON_ANALYSIS:".length);
                 analysisData = JSON.parse(jsonStr);
                 content = "Analysis Results"; // Fallback text for list view or if component fails
+
+                // Inject emojis and units into feedback (same as in handleFormSubmit)
+                if (analysisData.vital_sign_feedback && Array.isArray(analysisData.vital_sign_feedback)) {
+                  analysisData.vital_sign_feedback = analysisData.vital_sign_feedback.map((item: any) => {
+                    const tracking = config!.vitalSigns.find(v =>
+                      v.name.toLowerCase() === item.label.toLowerCase() ||
+                      v.id.toLowerCase() === item.label.toLowerCase()
+                    );
+                    return {
+                      ...item,
+                      emoji: tracking?.emoji || "📊",
+                      unit: tracking?.type === 'number' || tracking?.type === 'slider' ? tracking.unit : undefined
+                    };
+                  });
+                }
               } catch (e) {
                 console.error("Failed to parse analysis history", e);
               }
@@ -597,7 +612,8 @@ export default function CoachChat() {
             );
             return {
               ...item,
-              emoji: tracking?.emoji || "📊"
+              emoji: tracking?.emoji || "📊",
+              unit: tracking?.type === 'number' || tracking?.type === 'slider' ? tracking.unit : undefined
             };
           });
         }

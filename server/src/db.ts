@@ -27,8 +27,8 @@ export async function initDb() {
     await db.exec(`
       CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
-        google_id TEXT UNIQUE NOT NULL,
-        email TEXT NOT NULL,
+        google_id TEXT UNIQUE,
+        email TEXT,
         name TEXT,
         picture TEXT,
         session_token TEXT
@@ -85,8 +85,8 @@ export async function initDb() {
     await db.exec(`
       CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        google_id TEXT UNIQUE NOT NULL,
-        email TEXT NOT NULL,
+        google_id TEXT UNIQUE,
+        email TEXT,
         name TEXT,
         picture TEXT,
         session_token TEXT
@@ -160,6 +160,16 @@ export async function initDb() {
   await safeAddColumn('coaches', 'bio', 'TEXT');
   await safeAddColumn('coaches', 'vital_signs', 'TEXT');
   await safeAddColumn('trackings', 'unit', 'TEXT');
+
+  // Migrations for Guest Mode (Nullable google_id and email)
+  if (dbType === 'postgres') {
+    try {
+      await db.exec(`ALTER TABLE users ALTER COLUMN google_id DROP NOT NULL;`);
+    } catch (e) { /* ignore if already nullable */ }
+    try {
+      await db.exec(`ALTER TABLE users ALTER COLUMN email DROP NOT NULL;`);
+    } catch (e) { /* ignore if already nullable */ }
+  }
 }
 
 export default db;

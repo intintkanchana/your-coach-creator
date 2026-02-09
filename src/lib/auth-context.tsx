@@ -10,12 +10,14 @@ export interface User {
     name: string;
     // We might store a derived picture URL if we get one, or just use initials
     picture?: string;
+    isGuest?: boolean;
 }
 
 interface AuthContextType {
     user: User | null;
     isLoading: boolean;
     login: (token: string) => Promise<void>;
+    loginAsGuest: (nickname: string) => Promise<void>;
     logout: () => void;
 }
 
@@ -86,6 +88,42 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
     };
 
+
+    const loginAsGuest = async (nickname: string) => {
+        setIsLoading(true);
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/auth/guest-login`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ nickname }),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || "Guest login failed");
+            }
+
+            const data = await response.json();
+
+            if (data.user && data.sessionToken) {
+                const userWithGuestFlag = { ...data.user, isGuest: true };
+                localStorage.setItem("sessionToken", data.sessionToken);
+                localStorage.setItem("user", JSON.stringify(userWithGuestFlag));
+                setUser(userWithGuestFlag);
+                navigate("/coaches");
+            } else {
+                throw new Error("Invalid response from server");
+            }
+        } catch (error) {
+            console.error("Guest login error:", error);
+            throw error;
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     const logout = () => {
         localStorage.removeItem("sessionToken");
         localStorage.removeItem("user");
@@ -94,7 +132,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ user, isLoading, login, logout }}>
+        <AuthContext.Provider value={{ user, isLoading, login, loginAsGuest, logout }}>
             {children}
         </AuthContext.Provider>
     );
